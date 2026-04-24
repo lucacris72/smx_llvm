@@ -20,10 +20,10 @@ llvm/test/CodeGen/RISCV/
 The first backend milestone is mnemonic and encoding support:
 
 ```text
-smx.contx rd, rs1, rs2  opcode CUSTOM0, funct3=0, funct7=0
-smx.acc   rd, rs1, rs2  opcode CUSTOM0, funct3=1, funct7=0
-smx.exp   rd, rs1, rs2  opcode CUSTOM0, funct3=2, funct7=0
-smx.sigm  rd, rs1, rs2  opcode CUSTOM0, funct3=3, funct7=0
+smx.contx rd, rs1, rs2  opcode CUSTOM0, funct3=0, funct7=0, requires +smx
+smx.acc   rd, rs1, rs2  opcode CUSTOM0, funct3=1, funct7=0, requires +smx
+smx.exp   rd, rs1, rs2  opcode CUSTOM0, funct3=2, funct7=0, requires +smx
+smx.sigm  rd, rs1, rs2  opcode CUSTOM0, funct3=3, funct7=0, requires +smx
 ```
 
 `smx.contx` and `smx.acc` have accumulator semantics: `rd` is also read by the
@@ -45,4 +45,3 @@ loop-carried ctx phi
 single context update call
 no stores, volatile loads, atomics, or unknown side effects
 ```
-

@@ -780,6 +780,17 @@ def FeatureStdExtSvpbmt
                        "'Svpbmt' (Page-Based Memory Types)">;
 
 //===----------------------------------------------------------------------===//
+// Custom extensions
+//===----------------------------------------------------------------------===//
+
+def FeatureSMX
+    : SubtargetFeature<"smx", "HasSMX", "true",
+                       "'SMX' (Scale-adaptive INT8 softmax instructions)">;
+def HasSMX : Predicate<"Subtarget->hasSMX()">,
+             AssemblerPredicate<(all_of FeatureSMX),
+                                "'SMX' (Scale-adaptive INT8 softmax instructions)">;
+
+//===----------------------------------------------------------------------===//
 // Vendor extensions
 //===----------------------------------------------------------------------===//
 

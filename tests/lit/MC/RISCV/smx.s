@@ -1,11 +1,21 @@
-# RUN: llvm-mc -triple=riscv32 -show-encoding < %s | FileCheck %s
+# RUN: llvm-mc %s -triple=riscv32 -mattr=+smx -show-encoding \
+# RUN:     | FileCheck -check-prefixes=CHECK-ASM,CHECK-ASM-AND-OBJ %s
+# RUN: llvm-mc -filetype=obj -triple=riscv32 -mattr=+smx < %s \
+# RUN:     | llvm-objdump --mattr=+smx --no-print-imm-hex -d -r - \
+# RUN:     | FileCheck --check-prefix=CHECK-ASM-AND-OBJ %s
 
-# CHECK: smx.contx a0, a1, a2
-# CHECK: smx.acc a0, a1, a2
-# CHECK: smx.exp a0, a1, a2
-# CHECK: smx.sigm a0, a1, a2
+# CHECK-ASM-AND-OBJ: smx.contx a0, a1, a2
+# CHECK-ASM: encoding: [0x0b,0x85,0xc5,0x00]
 smx.contx a0, a1, a2
-smx.acc   a0, a1, a2
-smx.exp   a0, a1, a2
-smx.sigm  a0, a1, a2
 
+# CHECK-ASM-AND-OBJ: smx.acc a0, a1, a2
+# CHECK-ASM: encoding: [0x0b,0x95,0xc5,0x00]
+smx.acc a0, a1, a2
+
+# CHECK-ASM-AND-OBJ: smx.exp a0, a1, a2
+# CHECK-ASM: encoding: [0x0b,0xa5,0xc5,0x00]
+smx.exp a0, a1, a2
+
+# CHECK-ASM-AND-OBJ: smx.sigm a0, a1, a2
+# CHECK-ASM: encoding: [0x0b,0xb5,0xc5,0x00]
+smx.sigm a0, a1, a2
