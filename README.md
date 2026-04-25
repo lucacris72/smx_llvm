@@ -101,6 +101,10 @@ Once the LLVM backend learns the SMX mnemonics, define
 `SMX_USE_MNEMONICS=1` to emit `smx.contx`, `smx.acc`, `smx.exp`, and
 `smx.sigm` directly from inline assembly.
 
+With the patched Clang builtins, define `SMX_USE_LLVM_INTRINSICS=1` to route
+the C wrappers through `__builtin_riscv_smx_*`, then through the LLVM
+`llvm.riscv.smx.*` intrinsics, and finally to SMX assembly during codegen.
+
 The default RISC-V compiler path is `/opt/riscv/bin/riscv32-unknown-elf-gcc`.
 Override it with:
 

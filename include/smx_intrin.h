@@ -18,8 +18,21 @@
 #define SMX_RISCV_INLINE 0
 #endif
 
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
+#if defined(SMX_USE_LLVM_INTRINSICS) &&                                    \
+    __has_builtin(__builtin_riscv_smx_contx)
+#define SMX_RISCV_BUILTIN 1
+#else
+#define SMX_RISCV_BUILTIN 0
+#endif
+
 static inline uint32_t smx_contx(uint32_t ctx, uint32_t p0, uint32_t p1) {
-#if SMX_RISCV_INLINE
+#if SMX_RISCV_BUILTIN
+  return __builtin_riscv_smx_contx(ctx, p0, p1);
+#elif SMX_RISCV_INLINE
 #if defined(SMX_USE_MNEMONICS)
   __asm__ volatile("smx.contx %0, %1, %2"
                    : "+r"(ctx)
@@ -39,7 +52,9 @@ static inline uint32_t smx_contx(uint32_t ctx, uint32_t p0, uint32_t p1) {
 }
 
 static inline uint32_t smx_acc(uint32_t sum, uint32_t packed, uint32_t ctx) {
-#if SMX_RISCV_INLINE
+#if SMX_RISCV_BUILTIN
+  return __builtin_riscv_smx_acc(sum, packed, ctx);
+#elif SMX_RISCV_INLINE
 #if defined(SMX_USE_MNEMONICS)
   __asm__ volatile("smx.acc %0, %1, %2"
                    : "+r"(sum)
@@ -59,7 +74,9 @@ static inline uint32_t smx_acc(uint32_t sum, uint32_t packed, uint32_t ctx) {
 }
 
 static inline uint32_t smx_exp(uint32_t packed, uint32_t ctx) {
-#if SMX_RISCV_INLINE
+#if SMX_RISCV_BUILTIN
+  return __builtin_riscv_smx_exp(packed, ctx);
+#elif SMX_RISCV_INLINE
   uint32_t expv;
 #if defined(SMX_USE_MNEMONICS)
   __asm__ volatile("smx.exp %0, %1, %2"
@@ -79,7 +96,9 @@ static inline uint32_t smx_exp(uint32_t packed, uint32_t ctx) {
 }
 
 static inline uint32_t smx_sigm(uint32_t sum, uint32_t expv) {
-#if SMX_RISCV_INLINE
+#if SMX_RISCV_BUILTIN
+  return __builtin_riscv_smx_sigm(sum, expv);
+#elif SMX_RISCV_INLINE
   uint32_t out;
 #if defined(SMX_USE_MNEMONICS)
   __asm__ volatile("smx.sigm %0, %1, %2"

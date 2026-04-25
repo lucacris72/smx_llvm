@@ -21230,6 +21230,20 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     break;
   }
 
+  // SMX
+  case RISCV::BI__builtin_riscv_smx_contx:
+    ID = Intrinsic::riscv_smx_contx;
+    break;
+  case RISCV::BI__builtin_riscv_smx_acc:
+    ID = Intrinsic::riscv_smx_acc;
+    break;
+  case RISCV::BI__builtin_riscv_smx_exp:
+    ID = Intrinsic::riscv_smx_exp;
+    break;
+  case RISCV::BI__builtin_riscv_smx_sigm:
+    ID = Intrinsic::riscv_smx_sigm;
+    break;
+
   // Zk builtins
 
   // Zknh
