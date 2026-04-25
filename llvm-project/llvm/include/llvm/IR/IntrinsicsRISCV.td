@@ -75,6 +75,26 @@ let TargetPrefix = "riscv" in {
 } // TargetPrefix = "riscv"
 
 //===----------------------------------------------------------------------===//
+// SMX Extension
+
+let TargetPrefix = "riscv" in {
+
+  class SMXGPRGPRIntrinsic
+      : DefaultAttrsIntrinsic<[llvm_i32_ty],
+                              [llvm_i32_ty, llvm_i32_ty],
+                              [IntrNoMem, IntrSpeculatable]>;
+  class SMXGPRGPRGPRIntrinsic
+      : DefaultAttrsIntrinsic<[llvm_i32_ty],
+                              [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty],
+                              [IntrNoMem, IntrSpeculatable]>;
+
+  def int_riscv_smx_contx : SMXGPRGPRGPRIntrinsic;
+  def int_riscv_smx_acc   : SMXGPRGPRGPRIntrinsic;
+  def int_riscv_smx_exp   : SMXGPRGPRIntrinsic;
+  def int_riscv_smx_sigm  : SMXGPRGPRIntrinsic;
+} // TargetPrefix = "riscv"
+
+//===----------------------------------------------------------------------===//
 // Bitmanip (Bit Manipulation) Extension
 
 let TargetPrefix = "riscv" in {
