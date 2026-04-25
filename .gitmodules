@@ -1,0 +1,4 @@
+[submodule "hardware/smx"]
+	path = hardware/smx
+	url = https://github.com/lucacris72/smx.git
+	branch = main
