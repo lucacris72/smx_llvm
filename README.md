@@ -57,7 +57,35 @@ src/                  Runtime/library implementation
 examples/             Baseline examples and smoke-test kernels
 tests/lit/            LLVM lit test drafts for the future LLVM patch
 llvm-patches/         Notes and snippets for LLVM backend/pass integration
+hardware/smx/         SMX RTL, CV32E40P integration, Verilator flows
 plan.md               Full project plan
+```
+
+## RTL Submodule
+
+The SMX hardware repository is tracked as a git submodule under
+`hardware/smx`. After cloning this repository, initialize it with:
+
+```sh
+git submodule update --init --recursive
+```
+
+The submodule provides three useful hardware-side entry points:
+
+```text
+hardware/smx/SMX_dev/src       Unit-level SMX functional-unit flow
+hardware/smx/example_tb/core   Full-core CV32E40P Verilator flow
+hardware/smx/docker/shell.sh   Docker wrapper with Verilator and RISC-V tools
+```
+
+The root Makefile exposes thin wrappers around those flows:
+
+```sh
+make smx-rtl-unit
+make smx-core-hello
+make smx-core-softmax
+make smx-docker-unit
+make smx-docker-core-softmax
 ```
 
 ## First Build Target
