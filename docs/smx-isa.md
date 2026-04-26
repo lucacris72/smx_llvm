@@ -45,6 +45,16 @@ After the context pass:
 [7:0]   global max
 ```
 
+The RTL reference for this calculation is in:
+
+```text
+hardware/smx/SMX_dev/src/rtl/smx_fu_lut.sv
+```
+
+`smx.contx` computes max, min, and adaptive shift. A compiler transform must
+therefore preserve all three fields; recognizing only a max/min reduction is
+not semantically equivalent to `smx.contx`.
+
 ## Softmax Kernel Structure
 
 The runtime sequence is three passes over the input:
@@ -63,3 +73,6 @@ input and output are 4-byte aligned
 input and output point to at least n bytes
 input bytes are interpreted as signed int8 values
 ```
+
+The LLVM implementation status and test commands are documented in
+`docs/smx-llvm-implementation.md`.

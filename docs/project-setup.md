@@ -18,13 +18,14 @@ Keep LLVM checkouts and build directories outside this repository, or under
 ignored `build/` paths. A typical local setup is:
 
 ```sh
-cmake -S llvm-project/llvm -B build/llvm-riscv \
+cmake -S llvm-project/llvm -B build/llvm-smx \
   -G Ninja \
-  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_ENABLE_PROJECTS=clang \
   -DLLVM_TARGETS_TO_BUILD="RISCV" \
   -DCMAKE_BUILD_TYPE=Release
 
-ninja -C build/llvm-riscv clang opt llc llvm-mc FileCheck
+ninja -C build/llvm-smx \
+  opt clang llc llvm-mc llvm-objdump FileCheck count not llvm-readobj
 ```
 
 ## Baseline Flow
@@ -33,6 +34,8 @@ Current repository smoke test:
 
 ```sh
 make check
+make check-llvm
+make smx-clang-softmax-asm
 ```
 
 LLVM flow once `clang`/`llc` are available:
@@ -45,6 +48,6 @@ llc -mtriple=riscv32 -mattr=+m build/smx_intrin_example.ll \
   -o build/smx_intrin_example.s
 ```
 
-Before the LLVM backend supports SMX mnemonics, the wrappers emit `.insn r`.
-After Phase 1, build with `-DSMX_USE_MNEMONICS=1` to exercise the mnemonic
-printer/parser path.
+The current LLVM tree supports SMX mnemonics, LLVM IR intrinsics, Clang
+builtins, and the experimental `smx-loop-idiom` pass. For a full technical
+status, see `docs/smx-llvm-implementation.md`.
