@@ -104,6 +104,12 @@ Once the LLVM backend learns the SMX mnemonics, define
 With the patched Clang builtins, define `SMX_USE_LLVM_INTRINSICS=1` to route
 the C wrappers through `__builtin_riscv_smx_*`, then through the LLVM
 `llvm.riscv.smx.*` intrinsics, and finally to SMX assembly during codegen.
+The repository-level LLVM smoke tests can be run with:
+
+```sh
+make check-llvm
+make smx-clang-softmax-asm
+```
 
 The default RISC-V compiler path is `/opt/riscv/bin/riscv32-unknown-elf-gcc`.
 Override it with:

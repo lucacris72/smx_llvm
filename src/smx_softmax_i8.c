@@ -2,14 +2,20 @@
 
 #include "smx_intrin.h"
 
+#if !defined(__GNUC__) && !defined(__clang__)
 #include <string.h>
+#endif
 
 static inline uint32_t smx_load_u32(const void *ptr) {
 #if defined(__GNUC__) || defined(__clang__)
   ptr = __builtin_assume_aligned(ptr, 4);
 #endif
   uint32_t value;
+#if defined(__GNUC__) || defined(__clang__)
+  __builtin_memcpy(&value, ptr, sizeof(value));
+#else
   memcpy(&value, ptr, sizeof(value));
+#endif
   return value;
 }
 
@@ -17,7 +23,11 @@ static inline void smx_store_u32(void *ptr, uint32_t value) {
 #if defined(__GNUC__) || defined(__clang__)
   ptr = __builtin_assume_aligned(ptr, 4);
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+  __builtin_memcpy(ptr, &value, sizeof(value));
+#else
   memcpy(ptr, &value, sizeof(value));
+#endif
 }
 
 void smx_softmax_i8(const int8_t *restrict in, int8_t *restrict out, size_t n) {

@@ -15,4 +15,6 @@ compile_commands.json
 !tests/**/*.ll
 !tests/**/*.s
 !examples/**/*.S
+tests/**/Output/
+tests/**/.lit_test_times.txt
 .cache/
