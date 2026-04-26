@@ -66,6 +66,7 @@ add_llvm_component_library(LLVMScalarOpts
   RewriteStatepointsForGC.cpp
   SCCP.cpp
   SROA.cpp
+  SMXLoopIdiomRecognize.cpp
   Scalar.cpp
   Scalarizer.cpp
   ScalarizeMaskedMemIntrin.cpp

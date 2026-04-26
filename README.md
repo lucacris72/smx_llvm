@@ -111,6 +111,13 @@ make check-llvm
 make smx-clang-softmax-asm
 ```
 
+The patched LLVM also exposes an experimental SMX loop idiom pass for the
+context update idiom:
+
+```sh
+opt -passes=smx-loop-idiom input.ll -S
+```
+
 The default RISC-V compiler path is `/opt/riscv/bin/riscv32-unknown-elf-gcc`.
 Override it with:
 

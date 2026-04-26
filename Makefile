@@ -17,6 +17,7 @@ SMX_RTL_CORE_DIR := $(SMX_RTL_DIR)/example_tb/core
 SMX_DOCKER := $(SMX_RTL_DIR)/docker/shell.sh
 LLVM_SMX_LIT_TESTS := \
 	tests/lit \
+	llvm-project/llvm/test/Transforms/SMXLoopIdiom \
 	llvm-project/llvm/test/MC/RISCV/smx-valid.s \
 	llvm-project/llvm/test/MC/RISCV/smx-invalid.s \
 	llvm-project/llvm/test/CodeGen/RISCV/smx-intrinsics.ll \
