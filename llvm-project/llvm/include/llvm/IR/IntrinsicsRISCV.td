@@ -74,6 +74,22 @@ let TargetPrefix = "riscv" in {
 
 } // TargetPrefix = "riscv"
 
+// SMX custom instructions. The first operand of contx/acc is the old rd.
+let TargetPrefix = "riscv" in {
+  class SMXTwoArgs
+      : DefaultAttrsIntrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty],
+                              [IntrNoMem, IntrSpeculatable]>;
+  class SMXThreeArgs
+      : DefaultAttrsIntrinsic<[llvm_i32_ty],
+                              [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty],
+                              [IntrNoMem, IntrSpeculatable]>;
+
+  def int_riscv_smx_contx : SMXThreeArgs;
+  def int_riscv_smx_acc : SMXThreeArgs;
+  def int_riscv_smx_exp : SMXTwoArgs;
+  def int_riscv_smx_sigm : SMXTwoArgs;
+}
+
 //===----------------------------------------------------------------------===//
 // Bitmanip (Bit Manipulation) Extension
 

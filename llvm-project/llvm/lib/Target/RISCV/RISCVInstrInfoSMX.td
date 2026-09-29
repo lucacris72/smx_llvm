@@ -30,4 +30,11 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
                   Sched<[WriteIALU, ReadIALU, ReadIALU]>;
 }
 
+def : Pat<(int_riscv_smx_contx GPR:$rd, GPR:$rs1, GPR:$rs2),
+          (SMX_CONTX GPR:$rd, GPR:$rs1, GPR:$rs2)>;
+def : Pat<(int_riscv_smx_acc GPR:$rd, GPR:$rs1, GPR:$rs2),
+          (SMX_ACC GPR:$rd, GPR:$rs1, GPR:$rs2)>;
+def : PatGprGpr<int_riscv_smx_exp, SMX_EXP, i32, i32>;
+def : PatGprGpr<int_riscv_smx_sigm, SMX_SIGM, i32, i32>;
+
 } // Predicates = [HasXSMX, IsRV32]

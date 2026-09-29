@@ -43,6 +43,12 @@ TARGET_BUILTIN(__builtin_riscv_brev8_64, "UWiUWi", "nc", "zbkb,64bit")
 TARGET_BUILTIN(__builtin_riscv_zip_32, "UiUi", "nc", "zbkb,32bit")
 TARGET_BUILTIN(__builtin_riscv_unzip_32, "UiUi", "nc", "zbkb,32bit")
 
+// Xsmx custom extension
+TARGET_BUILTIN(__builtin_riscv_smx_contx, "UiUiUiUi", "nc", "xsmx,32bit")
+TARGET_BUILTIN(__builtin_riscv_smx_acc, "UiUiUiUi", "nc", "xsmx,32bit")
+TARGET_BUILTIN(__builtin_riscv_smx_exp, "UiUiUi", "nc", "xsmx,32bit")
+TARGET_BUILTIN(__builtin_riscv_smx_sigm, "UiUiUi", "nc", "xsmx,32bit")
+
 // Zknd extension
 TARGET_BUILTIN(__builtin_riscv_aes32dsi, "UiUiUiIUi", "nc", "zknd,32bit")
 TARGET_BUILTIN(__builtin_riscv_aes32dsmi, "UiUiUiIUi", "nc", "zknd,32bit")
