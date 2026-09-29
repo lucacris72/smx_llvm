@@ -1,5 +1,10 @@
 # SMX LLVM
 
+Il percorso didattico della nuova implementazione e' in
+[`docs/course-roadmap.md`](docs/course-roadmap.md). Questa branch ricostruisce
+il supporto LLVM passo per passo partendo dall'import LLVM 18; il vecchio
+pass SMX resta soltanto nella checkout legacy.
+
 This repository contains the LLVM/RISC-V integration work for SMX, a compact
 RISC-V custom extension for INT8 softmax.
 
