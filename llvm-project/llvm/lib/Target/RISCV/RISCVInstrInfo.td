@@ -2172,6 +2172,9 @@ include "RISCVInstrInfoZicond.td"
 include "RISCVInstrInfoZicfiss.td"
 
 //===----------------------------------------------------------------------===//
+// SMX custom extension
+include "RISCVInstrInfoSMX.td"
+
 // Vendor extensions
 //===----------------------------------------------------------------------===//
 

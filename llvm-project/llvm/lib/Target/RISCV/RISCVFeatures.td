@@ -780,6 +780,14 @@ def FeatureStdExtSvpbmt
                        "'Svpbmt' (Page-Based Memory Types)">;
 
 //===----------------------------------------------------------------------===//
+// Custom SMX extension
+def FeatureXSMX
+    : SubtargetFeature<"xsmx", "HasXSMX", "true",
+                       "'Xsmx' (INT8 SMX accelerator instructions)">;
+def HasXSMX : Predicate<"Subtarget->hasXSMX()">,
+               AssemblerPredicate<(all_of FeatureXSMX),
+                                  "'Xsmx' (INT8 SMX accelerator instructions)">;
+
 // Vendor extensions
 //===----------------------------------------------------------------------===//
 
