@@ -33,10 +33,12 @@
 #include "llvm/CodeGen/TargetPassConfig.h"
 #include "llvm/InitializePasses.h"
 #include "llvm/MC/TargetRegistry.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Target/TargetOptions.h"
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Scalar/SMXMinLoop.h"
 #include <optional>
 using namespace llvm;
 
@@ -258,6 +260,15 @@ MachineFunctionInfo *RISCVTargetMachine::createMachineFunctionInfo(
 TargetTransformInfo
 RISCVTargetMachine::getTargetTransformInfo(const Function &F) const {
   return TargetTransformInfo(RISCVTTIImpl(this, F));
+}
+
+void RISCVTargetMachine::registerPassBuilderCallbacks(
+    PassBuilder &PB, bool PopulateClassToPassNames) {
+  PB.registerLateLoopOptimizationsEPCallback(
+      [](LoopPassManager &LPM, OptimizationLevel Level) {
+        if (Level.getSpeedupLevel() >= 2)
+          LPM.addPass(SMXMinLoopPass());
+      });
 }
 
 // A RISC-V hart has a single byte-addressable address space of 2^XLEN bytes
