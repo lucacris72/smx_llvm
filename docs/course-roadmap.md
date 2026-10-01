@@ -72,6 +72,29 @@ due offset). I test `lit` coprono anche feature assente, RV64, load volatile,
 minimo unsigned e loop con store. Non serve un nuovo opcode DWARF: l'istruzione
 usa registri RISC-V esistenti e `-g` lega l'indirizzo alla riga C.
 
+Per confrontare lo stesso loop con e senza Xsmx su RTL, inclusi cicli e speedup:
+
+```sh
+make -C examples/step3/ex2 check
+```
+
+L'esempio usa fino a 256 elementi, confronta 60 casi con un riferimento Python
+e misura `mcycle` attorno a 16 chiamate. Il risultato e' documentato in
+[`examples/step3/ex2/readme.md`](../examples/step3/ex2/readme.md).
+
+L'esempio finale ricompila gli stessi sorgenti dello step0 in tre modi (GCC
+volatile, Clang volatile, Clang builtin), confronta assembly/IR e verifica
+l'output softmax su RTL:
+
+```sh
+make -C examples/step4 check
+```
+
+[`examples/step4/readme.md`](../examples/step4/readme.md) separa gli effetti
+del cambio di compilatore da quelli dei builtin: riuso dei load e unrolling
+non implicano automaticamente codice piu' piccolo o uno speedup. Questi esempi
+completano la dimostrazione senza ulteriori modifiche a LLVM o all'hardware.
+
 ## Contratto del caso studio
 
 ```c

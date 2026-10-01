@@ -19,6 +19,16 @@
 // 010: SMX.EXP
 // 011: SMX.SIGM
 
+#if defined(SMX_USE_LLVM_INTRINSICS)
+#include "smx_intrin.h"
+#if !SMX_RISCV_BUILTIN
+#error "This example requires Clang with SMX builtins enabled"
+#endif
+#define SMX_CONTX(rd, rs1, rs2) ((rd) = smx_contx((rd), (rs1), (rs2)))
+#define SMX_ACC(rd, rs1, rs2) ((rd) = smx_acc((rd), (rs1), (rs2)))
+#define SMX_EXP(rd, rs1, rs2) ((rd) = smx_exp((rs1), (rs2)))
+#define SMX_SIGM(rd, rs1, rs2) ((rd) = smx_sigm((rs1), (rs2)))
+#else
 #define SMX_CONTX(rd, rs1, rs2) \
     __asm__ volatile(".insn r 0x0B, 0, 0, %0, %1, %2" : "+r"(rd) : "r"(rs1), "r"(rs2))
 
@@ -30,6 +40,7 @@
 
 #define SMX_SIGM(rd, rs1, rs2) \
     __asm__ volatile(".insn r 0x0B, 3, 0, %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2))
+#endif
 
 
 // -------------------- Baseline FP32 Softmax --------------------
@@ -236,6 +247,13 @@ int main(void) {
     print_str("Top-1 FP32: "); print_signed(idx_fp);
     print_str(", SMX: "); print_signed(idx_smx);
     print_str(" -> Match: "); print_str(match ? "YES" : "NO"); print_char('\n');
+
+#if defined(SMX_REPORT_OUTPUT)
+    for (size_t i = 0; i < N/4; ++i) {
+        print_str("SMX_OUTPUT index="); print_dec(i);
+        print_str(" value="); print_dec(out_packed[i]); print_char('\n');
+    }
+#endif
 
     return 0; // Success
 }

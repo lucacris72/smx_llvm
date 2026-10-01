@@ -18,6 +18,22 @@ The project is intentionally incremental:
 The local `.context/` directory is ignored by git and is used only as a working
 knowledge base.
 
+## Course Examples
+
+| Example | Purpose | Command |
+| --- | --- | --- |
+| [step0](examples/step0/readme.md) | GNU baseline with opaque custom opcodes | `make -C examples/step0` |
+| [step1](examples/step1/readme.md) | MC encoding, mnemonics and debug information | `make -C examples/step1 check` |
+| [step2](examples/step2/readme.md) | Builtin/IR/backend pipeline and optimizer comparison | `make -C examples/step2 check` |
+| [step3](examples/step3/readme.md) | Automatic INT8 minimum idiom | `make -C examples/step3 check` |
+| [step3/ex2](examples/step3/ex2/readme.md) | Scalar/Xsmx RTL equivalence, cycles and speedup | `make -C examples/step3/ex2 check` |
+| [step4](examples/step4/readme.md) | Step0 softmax via builtins, assembly analysis and RTL equivalence | `make -C examples/step4 check` |
+
+The hardware examples require the initialized RTL submodule, Verilator and
+the GNU RISC-V runtime in `/opt/riscv`; compiler examples use the local course
+build in `build/llvm-course/bin`. Generated artifacts remain under ignored
+`build/` directories.
+
 ## SMX Scope
 
 Target:
