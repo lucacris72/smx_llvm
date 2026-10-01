@@ -1,0 +1,41 @@
+# BEFORE-LABEL: define{{.*}} @min_i8(
+# BEFORE: call i8 @llvm.smin.i8(
+# BEFORE-NOT: @llvm.riscv.smx.contx
+
+# PASS-LABEL: define{{.*}} @min_i8(
+# PASS: smx.packed:
+# PASS: load i32, ptr {{.*}}, align 1
+# PASS: load i32, ptr {{.*}}, align 1
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS: smx.scalar:
+# PASS: call i8 @llvm.smin.i8(
+# PASS-LABEL: define{{.*}} @min_volatile(
+# PASS-NOT: call i32 @llvm.riscv.smx.contx(
+# PASS: ret i8
+# PASS-LABEL: define{{.*}} @min_u8(
+# PASS-NOT: call i32 @llvm.riscv.smx.contx(
+# PASS: ret i8
+# PASS-LABEL: define{{.*}} @min_with_store(
+# PASS-NOT: call i32 @llvm.riscv.smx.contx(
+# PASS: ret i8
+
+# AUTO-IR-LABEL: define{{.*}} @min_i8(
+# AUTO-IR: call i32 @llvm.riscv.smx.contx(
+
+# AUTO-ASM-LABEL: min_i8:
+# AUTO-ASM: smx.contx
+# AUTO-ASM-LABEL: min_volatile:
+# AUTO-ASM-NOT: smx.contx
+# AUTO-ASM: ret
+# AUTO-ASM-LABEL: min_u8:
+# AUTO-ASM-NOT: smx.contx
+# AUTO-ASM: ret
+# AUTO-ASM-LABEL: min_with_store:
+# AUTO-ASM-NOT: smx.contx
+# AUTO-ASM: ret
+
+# NO-XSMX-LABEL: min_i8:
+# NO-XSMX-NOT: smx.contx
+# NO-XSMX: ret
+
+# REMARK: formed SMX packed minimum from scalar i8 loop

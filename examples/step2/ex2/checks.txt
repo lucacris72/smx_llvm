@@ -1,0 +1,38 @@
+# BUILTIN-IR-LABEL: define{{.*}} @discarded(
+# BUILTIN-IR-NOT: @llvm.riscv.smx.contx
+# BUILTIN-IR: ret i32 %ctx
+# BUILTIN-IR-LABEL: define{{.*}} @repeated(
+# BUILTIN-IR-NOT: @llvm.riscv.smx.exp
+# BUILTIN-IR: ret i32 0
+# BUILTIN-IR-LABEL: define{{.*}} @consumed(
+# BUILTIN-IR: call i32 @llvm.riscv.smx.contx(
+
+# VOLATILE-IR-LABEL: define{{.*}} @discarded(
+# VOLATILE-IR: call i32 asm sideeffect "smx.contx
+# VOLATILE-IR-LABEL: define{{.*}} @repeated(
+# VOLATILE-IR: call i32 asm sideeffect "smx.exp
+# VOLATILE-IR: call i32 asm sideeffect "smx.exp
+# VOLATILE-IR-LABEL: define{{.*}} @consumed(
+# VOLATILE-IR: call i32 asm sideeffect "smx.contx
+
+# BUILTIN-LABEL: discarded:
+# BUILTIN-NOT: smx.contx
+# BUILTIN: ret
+# BUILTIN-LABEL: repeated:
+# BUILTIN-NOT: smx.exp
+# BUILTIN: li a0, 0
+# BUILTIN: ret
+# BUILTIN-LABEL: consumed:
+# BUILTIN: smx.contx
+# BUILTIN: ret
+
+# VOLATILE-LABEL: discarded:
+# VOLATILE: smx.contx
+# VOLATILE: ret
+# VOLATILE-LABEL: repeated:
+# VOLATILE: smx.exp
+# VOLATILE: smx.exp
+# VOLATILE: ret
+# VOLATILE-LABEL: consumed:
+# VOLATILE: smx.contx
+# VOLATILE: ret
