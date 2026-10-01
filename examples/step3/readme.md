@@ -47,3 +47,6 @@ The simulation target uses the existing `examples/smx_min_i8.c` firmware,
 whose loop has the same canonical form. It compares the generated code with
 an unoptimized scalar reference across 246 cases. This target needs the RTL
 simulation toolchain and is separate from the quick compiler tests.
+
+[ex2](ex2/readme.md) builds the same kernel with and without Xsmx, runs both
+firmwares on Verilator, compares 60 results, and measures core cycles and speedup.

@@ -16,3 +16,4 @@ compile_commands.json
 !tests/**/*.s
 !examples/**/*.S
 .cache/
+__pycache__/
