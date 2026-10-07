@@ -82,18 +82,25 @@ L'esempio usa fino a 256 elementi, confronta 60 casi con un riferimento Python
 e misura `mcycle` attorno a 16 chiamate. Il risultato e' documentato in
 [`examples/step3/ex2/readme.md`](../examples/step3/ex2/readme.md).
 
-L'esempio finale ricompila gli stessi sorgenti dello step0 in tre modi (GCC
-volatile, Clang volatile, Clang builtin), confronta assembly/IR e verifica
-l'output softmax su RTL:
+L'esempio finale mantiene la softmax dello step0 per ispezionare IR prima/dopo
+le ottimizzazioni e assembly builtin/volatile con mnemonici. Il benchmark RTL
+misura soltanto SMX compilato con LLVM, confrontandolo con FP32, software Int8
+e SMX storici della repo hardware, conservati in un CSV immutato:
 
 ```sh
-make -C examples/step4 check
+make -s -C examples/step4
+make -s -C examples/step4 run
 ```
 
-[`examples/step4/readme.md`](../examples/step4/readme.md) separa gli effetti
-del cambio di compilatore da quelli dei builtin: riuso dei load e unrolling
-non implicano automaticamente codice piu' piccolo o uno speedup. Questi esempi
-completano la dimostrazione senza ulteriori modifiche a LLVM o all'hardware.
+[`examples/step4/readme.md`](../examples/step4/readme.md) documenta gli
+artefatti e i risultati. `make -C examples/step0 ir` genera il riferimento
+LLVM con assembly volatile per il confronto manuale. `N=63` resta il default
+solo per IR/assembly; lo sweep usa sempre le otto dimensioni storiche 8..1024,
+compila a `-O3` e misura `mcycle64`. Python verifica ogni parola col modello
+LUT; FP32/software non sono rieseguiti. Risultati e grafici PNG/SVG (X log,
+X lineare e solo SMX/LLVM) sono versionati in `examples/step4/results/`.
+Il confronto storico non isola l'effetto dei builtin dal cambio di compilatore
+e harness. Non richiede altre modifiche a LLVM o all'hardware.
 
 ## Contratto del caso studio
 

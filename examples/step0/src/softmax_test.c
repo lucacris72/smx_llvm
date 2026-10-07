@@ -19,9 +19,9 @@
 // 010: SMX.EXP
 // 011: SMX.SIGM
 
-#if defined(SMX_USE_LLVM_INTRINSICS)
+#if defined(SMX_USE_LLVM_INTRINSICS) || defined(SMX_USE_MNEMONICS)
 #include "smx_intrin.h"
-#if !SMX_RISCV_BUILTIN
+#if defined(SMX_USE_LLVM_INTRINSICS) && !SMX_RISCV_BUILTIN
 #error "This example requires Clang with SMX builtins enabled"
 #endif
 #define SMX_CONTX(rd, rs1, rs2) ((rd) = smx_contx((rd), (rs1), (rs2)))

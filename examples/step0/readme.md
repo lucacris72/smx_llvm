@@ -29,3 +29,8 @@ In the plain dump, custom instructions appear as `.insn 4, 0x...`, not as
 `smx.contx` and related mnemonics. `-S` adds source lines such as
 `SMX_CONTX(...)`, which helps locate the instruction but does not decode it.
 That missing mnemonic is the debugging problem addressed in the next step.
+
+For a manual LLVM IR comparison with step4, the optional command
+`make -s --no-print-directory -C examples/step0 ir` produces
+`build/softmax_test.ll` using course Clang at `-O2`, without Xsmx or builtins.
+This does not change the default GNU build or its firmware.

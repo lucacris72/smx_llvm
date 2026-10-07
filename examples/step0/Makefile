@@ -9,21 +9,30 @@ RISCV_CC := $(RISCV_PREFIX)gcc
 RISCV_OBJCOPY := $(RISCV_PREFIX)objcopy
 RISCV_OBJDUMP := $(RISCV_PREFIX)objdump
 RISCV_FLAGS ?= -march=rv32imc_zicsr -mabi=ilp32
+LLVM_TOOLS ?= $(abspath $(STEP0_DIR)/../../build/llvm-course/bin)
+CLANG := $(LLVM_TOOLS)/clang
 
 ELF := $(BUILD_DIR)/softmax_test.elf
 HEX := $(BUILD_DIR)/softmax_test.hex
 DUMP := $(BUILD_DIR)/softmax_test.dump
 SOURCE_DUMP := $(BUILD_DIR)/softmax_test.source.dump
+IR := $(BUILD_DIR)/softmax_test.ll
 SOURCES := $(SRC_DIR)/softmax_test.c $(SRC_DIR)/crt0.S \
            $(SRC_DIR)/syscalls.c $(SRC_DIR)/vectors.S \
            $(CORE_DIR)/mem_stall/mem_stall.c
 
 .DEFAULT_GOAL := all
-.PHONY: all dumps sim softmax-test-run help clean
+.PHONY: all dumps ir sim softmax-test-run help clean
 
 all: $(ELF) dumps
 
 dumps: $(DUMP) $(SOURCE_DUMP)
+
+ir: $(IR)
+
+$(IR): $(SRC_DIR)/softmax_test.c $(CLANG) $(STEP0_DIR)/Makefile | $(BUILD_DIR)
+	@$(CLANG) --target=riscv32-unknown-elf --sysroot=$(shell $(RISCV_CC) -print-sysroot) \
+		$(RISCV_FLAGS) -O2 -S -emit-llvm "$<" -o "$@"
 
 $(BUILD_DIR):
 	mkdir -p "$@"
@@ -50,7 +59,8 @@ softmax-test-run: sim
 help:
 	@echo "make              Build the ELF and both disassembly dumps"
 	@echo "make sim          Build and run the Verilator core simulation"
+	@echo "make ir           Emit optional Clang IR with the original volatile asm"
 	@echo "make clean        Remove step0-generated files"
 
 clean:
-	rm -f "$(ELF)" "$(HEX)" "$(DUMP)" "$(SOURCE_DUMP)"
+	rm -f "$(ELF)" "$(HEX)" "$(DUMP)" "$(SOURCE_DUMP)" "$(IR)"

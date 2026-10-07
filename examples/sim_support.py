@@ -1,13 +1,32 @@
 """Run bare-metal firmware with the repository's Verilator core."""
 
+from contextlib import ExitStack
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 
 
-def prepare_simulator(repo: Path) -> Path:
+def run_logged(command: list[str], log: Path, output: Path | None = None) -> None:
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with ExitStack() as files:
+        stream = files.enter_context(log.open("a"))
+        stdout = files.enter_context(output.open("w")) if output is not None else stream
+        stream.write(f"$ {shlex.join(command)}\n")
+        stream.flush()
+        result = subprocess.run(command, stdout=stdout, stderr=stream)
+    if result.returncode:
+        detail = "\n".join(log.read_text(errors="replace").splitlines()[-30:])
+        raise RuntimeError(f"command failed ({result.returncode}); see {log}\n{detail}")
+
+
+def prepare_simulator(repo: Path, log: Path | None = None) -> Path:
     core = repo / "hardware/smx/example_tb/core"
-    subprocess.run(["make", "-C", str(core), "verilator-build", "smx-luts"], check=True)
+    command = ["make", "-C", str(core), "verilator-build", "smx-luts"]
+    if log is None:
+        subprocess.run(command, check=True)
+    else:
+        run_logged(command, log)
     return core
 
 
@@ -17,12 +36,13 @@ def validate_exit(output: str) -> None:
 
 
 def run_firmware(core: Path, firmware: Path, run_dir: Path,
-                 timeout: int = 120, maxcycles: int = 5_000_000) -> str:
+                 timeout: int = 120, maxcycles: int = 5_000_000, quiet: bool = False) -> str:
     run_dir.mkdir(parents=True, exist_ok=True)
     for name in ("smx_lut1d.hex", "smx_lut2d.hex"):
         shutil.copy2(core / name, run_dir / name)
     log = run_dir / "simulation.log"
-    print(f"Simulating {firmware.name}; log: {log}", flush=True)
+    if not quiet:
+        print(f"Simulating {firmware.name}; log: {log}", flush=True)
     try:
         result = subprocess.run(
             [str(core / "obj_dir/Vtb_top"), f"+firmware={firmware.resolve()}",

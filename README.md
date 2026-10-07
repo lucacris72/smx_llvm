@@ -27,12 +27,13 @@ knowledge base.
 | [step2](examples/step2/readme.md) | Builtin/IR/backend pipeline and optimizer comparison | `make -C examples/step2 check` |
 | [step3](examples/step3/readme.md) | Automatic INT8 minimum idiom | `make -C examples/step3 check` |
 | [step3/ex2](examples/step3/ex2/readme.md) | Scalar/Xsmx RTL equivalence, cycles and speedup | `make -C examples/step3/ex2 check` |
-| [step4](examples/step4/readme.md) | Step0 softmax via builtins, assembly analysis and RTL equivalence | `make -C examples/step4 check` |
+| [step4](examples/step4/readme.md) | Builtin IR/assembly and LLVM SMX sweep versus fixed hardware results | `make -s -C examples/step4 run` |
 
 The hardware examples require the initialized RTL submodule, Verilator and
 the GNU RISC-V runtime in `/opt/riscv`; compiler examples use the local course
-build in `build/llvm-course/bin`. Generated artifacts remain under ignored
-`build/` directories.
+build in `build/llvm-course/bin`. Compilation and simulation artifacts remain
+under ignored `build/` directories. Step4 publishes its reference data,
+measured results and plots under `examples/step4/results/` and `ground_truth.csv`.
 
 ## SMX Scope
 

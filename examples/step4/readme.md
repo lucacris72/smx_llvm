@@ -1,130 +1,81 @@
-# Step 4: the step0 softmax using Clang builtins
+# Step4: builtin LLVM e benchmark con riferimenti storici
 
-This example reuses `../step0/src/softmax_test.c`, `crt0.S`, `syscalls.c`,
-`vectors.S`, and `link.ld`. There is no copied or rewritten softmax algorithm.
-The original volatile macros remain the default. Defining
-`SMX_USE_LLVM_INTRINSICS=1` selects the existing wrappers in `include/smx_intrin.h`
-and refuses to compile if the SMX Clang builtins are unavailable.
+Conserviamo FP32, software Int8 e SMX della repo hardware come **ground truth**;
+misuriamo soltanto SMX compilato con Clang/builtin e aggiungiamo la nuova curva.
+Il vecchio benchmark che rieseguiva tutti e tre i kernel e' rimosso.
+Non sono necessarie altre modifiche o ricompilazioni di LLVM/Clang o RTL.
+
+## Uso
+
+Dalla root del worktree `smx_llvm_course`:
 
 ```sh
-make -C examples/step4 analyze  # Build and compare assembly and optimized IR
-make -C examples/step4 check    # Also run Python tests and all three RTL firmwares
+make -s -C examples/step4        # IR e assembly, N=63
+make -s -C examples/step4 run    # Sweep Verilator, risultati e immagini
+make -s -C examples/step4 plots  # Solo immagini dai risultati salvati
+make -s -C examples/step4 check  # Test automatici + sweep + immagini
+make -s -C examples/step4 N=256  # Cambia solo IR/assembly
 ```
 
-Three variants are built at `-O2 -g`, without LTO:
+Servono i tool course in `build/llvm-course/bin`, runtime GNU RISC-V in
+`/opt/riscv`, submodule hardware inizializzato, Verilator e Python >= 3.12.
+`run`, `plots` e `check` installano automaticamente le dipendenze grafiche
+di `requirements.txt` in `build/venv/` (rete necessaria al primo setup).
+La compilazione resta silenziosa; comandi ed errori sono in `build/build.log`.
+`clean` elimina `build/`, ma conserva i risultati e le immagini versionati.
 
-| Variant | Compiler | Custom operations |
-| --- | --- | --- |
-| `gcc-inline` | GNU RISC-V GCC | Original volatile `.insn` |
-| `clang-inline` | Course Clang, Xsmx enabled | Same volatile `.insn` |
-| `clang-builtin` | Same Clang and flags | Clang builtins via the wrappers |
+## IR E Assembly
 
-Clang uses `--target=riscv32-unknown-elf -march=rv32imc_zicsr_xsmx -mabi=ilp32`;
-GCC uses `-march=rv32imc_zicsr -mabi=ilp32`. Startup, syscalls, memory-stall
-support, GNU linker and C/math runtime are shared across variants. The original
-step0 ELF is rebuilt too and decoded with the extended LLVM disassembler as
-`build/step0-original.dump`, so custom opcodes have comparable names.
+Lo stesso `step0/src/softmax_test.c` produce a `-O2`, senza metadata di debug:
 
-## Artifacts and checks
+- `build/softmax.before.ll`: intrinsic prima delle pass (`-disable-llvm-passes`).
+- `build/softmax.ll`: IR ottimizzata.
+- `build/softmax.s`: assembly builtin, con mnemonici `smx.*`.
+- `build/softmax.inline.s`: inline assembly volatile, con gli stessi mnemonici.
 
-`build/<variant>.s` is compiler-emitted assembly; `<variant>.dump` decodes only
-the application object, and `<variant>.elf.dump` decodes the complete linked
-firmware. The static counts in `comparison.md`/`comparison.json` exclude GNU
-runtime libraries. They count instruction sites and encoded bytes, not dynamic
-executions, total ELF size, or performance. Debug-only local labels do not
-split a function in the report. Diff files compare decoded instructions, with
-addresses removed; operands still contain object-relative branch addresses,
-so layout changes can also appear as differences.
+I due assembly usano Clang, Xsmx e le stesse opzioni; cambia solo la selezione
+dei wrapper. `N` e' un intero >= 4, default **63**, e aggiorna questi file senza
+`clean`. Non cambia lo sweep, neppure con `make ... run N=256`.
+Per l'IR volatile di confronto: `make -s --no-print-directory -C examples/step0 ir`.
+Il percorso GCC originale di step0 continua a usare `.insn`.
 
-`clang-inline.ll` and `clang-builtin.ll` show optimized LLVM IR. The comparison
-checks that the first uses `asm sideeffect` and the second calls all four
-`llvm.riscv.smx.*` intrinsics, without an inline-asm fallback. All variants must
-contain the four SMX instruction mnemonics in their application disassembly.
+## Metodo
 
-The assembly/IR comparison uses **uninstrumented** source. For RTL validation,
-separate `.runtime.*` images define `SMX_REPORT_OUTPUT=1` to print the packed
-outputs after the computation. Python compares every one of the 15 output
-words across the three firmwares, checks `Top-1 FP32: 19, SMX: 19 -> Match: YES`
-and requires the simulator's `EXIT SUCCESS`. This is stronger than comparing
-Top-1 alone, but it is not an independent numerical softmax oracle. Logs,
-traces and RAM dumps live in separate `build/run-*` directories.
+`ground_truth.csv` e' una copia numericamente invariata del CSV storico
+`example_tb/core/softmax_performance.csv` della checkout hardware locale.
+I punti N=8, 64 e 1024 coincidono con la tabella nel [README hardware](../../hardware/smx/README.md#performance-summary).
+Il CSV e' versionato: non occorre rigenerarlo o usare un'altra checkout.
 
-## Interpretation and inherited limits
+`benchmark.c` riprende input, quantizzazione e tre pass packed di
+`hardware/smx/example_tb/core/custom/softmax_comparison.c`, sostituendo le
+istruzioni inline con builtin. Compiliamo con `-O3`, `rv32imc_zicsr_xsmx`,
+ABI `ilp32`, per N=8,16,32,64,128,256,512,1024 (tutti senza coda).
+Misuriamo una chiamata con `mcycle64` e barriere del compilatore; preparazione,
+quantizzazione, stampa e validazione sono escluse, overhead del contatore incluso.
+Python controlla ogni parola packed con il modello LUT e verifica il Top-1.
+Non compiliamo o rieseguiamo FP32/software per misurarne i cicli.
 
-Compare `clang-inline` with `clang-builtin` to isolate the effect of making SMX
-operations visible to LLVM. Comparing step0/GCC with Clang also includes
-different loop heuristics, inlining and register allocation. A smaller GCC or
-Clang output alone does not prove a builtin-specific optimization.
+Il driver C++ event-driven riusa il modello Verilator senza modificare il RTL;
+per N=8 controlliamo anche uguaglianza di cicli e dump RAM col driver originale.
+Firmware, disassembly e log rimangono in `build/bench/<N>/`.
 
-The original test uses `N=63`, processes only `N/4=15` packed words, and leaves
-the final three SMX results zero. It assumes aligned packed input and accesses
-an int8 buffer through uint32 pointers, an inherited aliasing assumption. This
-example preserves those limitations for a controlled assembly comparison;
-it does not claim general softmax correctness or support arbitrary N. There
-are no LLVM, Clang or hardware source changes in this step.
+## Risultati E Grafici
 
-## Observed assembly differences
+`results/` contiene CSV, JSON con provenienza/hash e [tabella completa](results/README.md).
+`results/plots/` raccoglie PNG e SVG: `cycles`, `speedup`, `softmax_performance`,
+le rispettive varianti `_linear` (asse X lineare) e `smx_only_linear`
+(solo SMX storico/LLVM, entrambi gli assi lineari). Nei grafici completi i cicli
+restano su Y logaritmica; gli speedup usano sempre i numeratori storici.
 
-Measured on 2026-10-01 with course Clang 18.1.8 and GNU RISC-V GCC 15.1.0.
-These counts include the entire application object: the FP32 reference,
-quantization, reporting functions and main, not just the SMX computation.
+Run verificato il 2026-10-07, Clang 18.1.8. Speedup = cicli riferimento / LLVM:
 
-| Variant | Static instructions | Encoded bytes | CONTX sites | ACC sites | EXP sites | SIGM sites |
-| --- | --- | --- | --- | --- | --- | --- |
-| GCC volatile | 446 | 1356 | 2 | 3 | 1 | 1 |
-| Clang volatile | 719 | 2226 | 8 | 15 | 1 | 1 |
-| Clang builtin | 738 | 2360 | 8 | 15 | 15 | 15 |
+| N | SMX storico | SMX LLVM | SMX / LLVM | FP32 / LLVM | SW / LLVM |
+|---:|---:|---:|---:|---:|---:|
+| 16 | 41 | 55 | 0.75x | 505.16x | 10.33x |
+| 64 | 112 | 107 | 1.05x | 1030.62x | 26.64x |
+| 128 | 491 | 253 | 1.94x | 871.03x | 22.59x |
+| 1024 | 4882 | 4758 | 1.03x | 369.81x | 9.80x |
 
-1. GCC keeps compact loops: its two CONTX sites implement the paired-word loop
-   and the final odd word; its three ACC sites implement two operations per
-   loop iteration and the final odd word. Its EXP/SIGM pair remains a loop.
-2. Clang already unrolls the CONTX and ACC passes with volatile asm. Therefore
-   their expansion from 2/3 sites to 8/15 sites compared with step0 is a
-   compiler-heuristic difference, not proof of a builtin benefit.
-3. With builtins, the 15 packed input words are loaded once and retained in
-   registers across all three passes. In the Clang volatile variant the input
-   words are loaded again for ACC and again for EXP: 45 dynamic packed-input
-   loads instead of 15. This reuse is visible in both the IR SSA values and
-   disassembly. The intrinsics' `memory(none)` contract exposes the absence of
-   memory effects; the opaque side-effecting asm calls do not provide that
-   same optimizer contract.
-4. The builtin variant completely unrolls the EXP/SIGM loop, removes its
-   induction-variable updates and conditional branch, and uses stores at
-   constant offsets. There are still 15 EXP and 15 SIGM **executions** in both
-   Clang variants; only their static layout changes.
-5. There is no elimination of useful SMX results here: all output words are
-   consumed. The smaller `mv` count (65 versus 63) is also visible, but does
-   not by itself establish better execution time.
-
-The result is genuine compiler optimization (input reuse and less loop
-control), **not** a smaller program: the builtin application uses 134 more
-encoded bytes than the Clang volatile control. GCC remains much more compact
-on this sample. No step4 cycle speedup is inferred from static counts. The
-uninstrumented original step0 and step4 GCC variant have identical main counts
-(243 instructions, 720 bytes). All 15 packed words and Top-1 matched in the
-three instrumented RTL runs.
-
-## Changes to reproduce this step
-
-1. In `examples/step0/src/softmax_test.c`, add the opt-in builtin branch to the
-   four existing SMX macros. CONTX and ACC pass the previous destination value
-   as an explicit input; EXP and SIGM return a new value. Keep the original
-   volatile definitions in the default branch to preserve the baseline.
-2. In the same file, add opt-in `SMX_REPORT_OUTPUT` printing after computation.
-   Only runtime-validation builds enable it; assembly comparisons do not.
-3. Add this directory's `Makefile` to compile the same source in the three
-   modes, produce IR/assembly/disassembly, share runtime objects, and rebuild
-   the real step0 ELF for comparison.
-4. Add `compare.py` to check code generation, generate static metrics and
-   decoded diffs, then optionally run all three firmwares and compare output
-   words. It reuses `../sim_support.py` for separate run directories and
-   explicit simulation-exit validation. The shared helper also keeps partial
-   output on timeout and prints the active firmware/log path.
-5. Add `test_compare.py` for instruction parsing, missing/duplicate/invalid
-   output, Top-1 failure, simulator timeout and a firmware failure despite a
-   zero simulator-process exit code. Invoke just these fast tests with
-   `make -C examples/step4 test`; invoke everything with `make ... check`.
-
-After changing compiler paths or flags, use `make -C examples/step4 clean`
-before rebuilding. The local GNU runtime emits pre-existing syscalls and RWX
-linker warnings; this example does not alter that runtime or linker script.
+PASS su tutte le otto dimensioni. Un rapporto < 1 indica un peggioramento.
+E' un confronto con risultati storici, non una misura isolata dell'effetto
+dei builtin: cambiano compilatore e harness. Il riferimento FP32 e' soft-float.
