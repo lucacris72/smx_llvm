@@ -25,7 +25,7 @@ knowledge base.
 | [step0](examples/step0/readme.md) | GNU baseline with opaque custom opcodes | `make -C examples/step0` |
 | [step1](examples/step1/readme.md) | MC encoding, mnemonics and debug information | `make -C examples/step1 check` |
 | [step2](examples/step2/readme.md) | Builtin/IR/backend pipeline and optimizer comparison | `make -C examples/step2 check` |
-| [step3](examples/step3/readme.md) | Automatic INT8 minimum idiom | `make -C examples/step3 check` |
+| [step3/ex1](examples/step3/ex1/readme.md) | Simple C minimum lowered automatically to SMX | `make -C examples/step3/ex1 check` |
 | [step3/ex2](examples/step3/ex2/readme.md) | Scalar/Xsmx RTL equivalence, cycles and speedup | `make -C examples/step3/ex2 check` |
 | [step4](examples/step4/readme.md) | Builtin IR/assembly and LLVM SMX sweep versus fixed hardware results | `make -s -C examples/step4 run` |
 

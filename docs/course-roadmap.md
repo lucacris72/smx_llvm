@@ -72,6 +72,14 @@ due offset). I test `lit` coprono anche feature assente, RV64, load volatile,
 minimo unsigned e loop con store. Non serve un nuovo opcode DWARF: l'istruzione
 usa registri RISC-V esistenti e `-g` lega l'indirizzo alla riga C.
 
+L'esempio introduttivo [`step3/ex1`](../examples/step3/ex1/readme.md) mostra
+prima la sola funzione `min_i8`: C, IR prima/dopo il pass e assembly con/senza
+Xsmx. Non richiede linking o simulazione:
+
+```sh
+make -C examples/step3/ex1 check
+```
+
 Per confrontare lo stesso loop con e senza Xsmx su RTL, inclusi cicli e speedup:
 
 ```sh
@@ -101,6 +109,73 @@ LUT; FP32/software non sono rieseguiti. Risultati e grafici PNG/SVG (X log,
 X lineare e solo SMX/LLVM) sono versionati in `examples/step4/results/`.
 Il confronto storico non isola l'effetto dei builtin dal cambio di compilatore
 e harness. Non richiede altre modifiche a LLVM o all'hardware.
+
+## Come le modifiche diventano tool utilizzabili
+
+I sorgenti modificati sono in `llvm-project/`, mentre i programmi che
+eseguiamo sono in `build/llvm-course/bin/`. Le modifiche non vengono lette a
+runtime: sono integrate nei tool attraverso generazione di codice,
+compilazione C++ e linking. Non carichiamo una pass tramite plugin e non
+sostituiamo il Clang di sistema.
+
+| Tappa | Integrazione nella build | Tool interessati |
+| --- | --- | --- |
+| ISA/MC | TableGen legge i `.td` RISC-V e genera tabelle di istruzioni, matcher, encoder, printer e decoder; il codice C++ registra anche `xsmx` nel parser ISA | `llvm-mc`, `llvm-objdump`, `llc`, Clang e altri utenti del backend |
+| Builtin/intrinsic | Le definizioni builtin e il lowering C++ entrano nel frontend Clang; TableGen genera gli intrinsic LLVM e i pattern di selezione RISC-V | Clang, `opt`, `llc` |
+| Pass automatica | `SMXMinLoop.cpp` entra in `LLVMScalarOpts` tramite CMake; `PassRegistry.def` espone `smx-min-idiom` a `opt`; il target RISC-V inserisce il pass nella pipeline a `-O2`/`-O3` | `opt`, Clang |
+
+Nella build locale queste librerie LLVM sono linkate staticamente nei tool.
+Il codice macchina emesso per il firmware e' invece RISC-V: costruiamo un
+compilatore che gira sulla macchina host e genera codice per il target, non
+un compilatore da eseguire sul core SMX.
+
+La configurazione CMake completa e' nella sezione "Base riproducibile".
+Dopo una modifica ai sorgenti LLVM/Clang, si aggiorna la build esistente con:
+
+```sh
+ninja -C build/llvm-course -j4 clang opt llc llvm-mc llvm-objdump \
+  llvm-readelf llvm-dwarfdump FileCheck not count llvm-config
+make check-llvm
+```
+
+Ninja rigenera i file TableGen, ricompila i sorgenti coinvolti e rilinka i
+tool dipendenti quando necessario; non serve ripartire da una build pulita.
+Se cambiano `CMakeLists.txt` o le opzioni della configurazione, CMake deve
+rigenerare la build (Ninja lo invoca automaticamente per le modifiche CMake
+tracciate; per cambiare opzioni si rilancia il comando `cmake`). I file
+generati sotto `build/` non si modificano a mano.
+
+I Makefile degli esempi selezionano esplicitamente la build locale attraverso
+`LLVM_TOOLS`, evitando di usare per errore un Clang vanilla. L'ISA si abilita
+con `-march=rv32i_xsmx` o con le altre estensioni del core piu' `_xsmx`.
+Negli esempi che usano i wrapper, `SMX_USE_LLVM_INTRINSICS=1` sceglie i builtin.
+Per i loop automatici non serve quel define: il pass controlla RV32 e la
+feature Xsmx della funzione.
+
+Lo step3 segue questa catena:
+
+```text
+C: min_i8 -> IR scalare con llvm.smin.i8
+         -> SMXMinLoopPass: due load packed + llvm.riscv.smx.contx + coda scalare
+         -> selezione istruzioni RISC-V -> smx.contx -> encoding nell'oggetto
+```
+
+`opt -passes='loop-simplify,lcssa,smx-min-idiom'` rende visibile il pass
+isolatamente. Clang lo esegue automaticamente a `-O2`/`-O3` tramite il callback
+in `RISCVTargetMachine.cpp`; a `-O1` l'esempio conserva l'IR prima del pass.
+E' un pass dedicato, non una modifica a `LoopIdiomRecognize.cpp`.
+
+Infine, una modifica ai soli esempi C, ai Makefile, ai test o ai README non
+richiede di ricompilare LLVM. Basta ricompilare gli esempi o rilanciare i test.
+Gli ELF di simulazione usano il linker e il runtime GNU gia' esistenti: non
+serve ricostruire newlib o modificare il linking per ogni nuova istruzione.
+
+I Makefile di `step3/ex1` e `step4` tracciano anche i binari dei tool come
+dipendenze degli artefatti di compilazione, quindi una loro ricompilazione
+rigenera l'IR/assembly dell'esempio. Per gli
+altri esempi, i cui Makefile non tracciano ancora queste dipendenze, dopo aver
+aggiornato i tool usare `make -C examples/<step> clean` e poi `make ... check`
+per evitare di leggere artefatti generati dal compilatore precedente.
 
 ## Contratto del caso studio
 
