@@ -1,9 +1,8 @@
 # SMX LLVM
 
-Il percorso didattico della nuova implementazione e' in
-[`docs/course-roadmap.md`](docs/course-roadmap.md). Questa branch ricostruisce
-il supporto LLVM passo per passo partendo dall'import LLVM 18; il vecchio
-pass SMX resta soltanto nella checkout legacy.
+Il percorso didattico dell'implementazione e' in
+[`docs/course-roadmap.md`](docs/course-roadmap.md). Il ramo `main` ricostruisce
+il supporto LLVM passo per passo partendo dall'import LLVM 18.
 
 This repository contains the LLVM/RISC-V integration work for SMX, a compact
 RISC-V custom extension for INT8 softmax.
@@ -12,8 +11,8 @@ The project is intentionally incremental:
 
 1. Model the four SMX instructions in the LLVM RISC-V backend.
 2. Provide C wrappers and a small runtime function that emits SMX operations.
-3. Add experimental LLVM loop idiom recognition for canonical softmax context
-   reductions.
+3. Recognize canonical signed INT8 minimum reductions and lower them to
+   `smx.contx` automatically.
 
 The local `.context/` directory is ignored by git and is used only as a working
 knowledge base.

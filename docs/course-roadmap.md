@@ -30,10 +30,10 @@ ordine e non importano il vecchio pass sperimentale.
 
 ## Base riproducibile
 
-La branch `course/smx-from-scratch` parte dal commit `e8426c15b` di LLVM 18
+Il ramo `main` parte dal commit `e8426c15b` di LLVM 18
 e conserva l'RTL come submodule al commit `1d8dff15a190e3e14fa3d1513bc31d5247eee2b7`.
-La vecchia checkout `smx_llvm` resta il riferimento legacy. `build/` e' locale
-e non versionato.
+Questo e' l'unico ramo di sviluppo del progetto. `build/` e' locale e non
+versionato.
 
 ```sh
 git submodule update --init hardware/smx
