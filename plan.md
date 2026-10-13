@@ -84,7 +84,7 @@ D0.4 Documento breve con semantica delle quattro istruzioni
 
 Fare in modo che LLVM conosca le quattro istruzioni SMX e possa stamparle in assembly.
 
-Le quattro istruzioni sono già definite come istruzioni RISC-V custom R-type su opcode `CUSTOM0`; il campo `funct3` seleziona `SMX.CONTX`, `SMX.ACC`, `SMX.EXP`, `SMX.SIGM` .
+Le quattro istruzioni sono già definite come istruzioni RISC-V custom R-type su opcode `CUSTOM1` con `funct3=7` (ISA v2); il campo `funct7=0x5a..0x5d` seleziona `SMX.CONTX`, `SMX.ACC`, `SMX.EXP`, `SMX.SIGM` .
 
 ## Attività
 
@@ -123,8 +123,8 @@ Test MC/assembly:
 Test encoding:
 
 ```text
-Verificare opcode CUSTOM0
-Verificare funct3 corretto
+Verificare opcode CUSTOM1
+Verificare funct3=7 e funct7 per operazione
 Verificare formato R-type
 ```
 

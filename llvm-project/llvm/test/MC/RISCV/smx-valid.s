@@ -10,18 +10,18 @@
 # RUN:     | FileCheck --check-prefix=CHECK-ASM-AND-OBJ %s
 
 # CHECK-ASM-AND-OBJ: smx.contx a0, a1, a2
-# CHECK-ASM: encoding: [0x0b,0x85,0xc5,0x00]
+# CHECK-ASM: encoding: [0x2b,0xf5,0xc5,0xb4]
 smx.contx a0, a1, a2
 
 # CHECK-ASM-AND-OBJ: smx.acc a0, a1, a2
-# CHECK-ASM: encoding: [0x0b,0x95,0xc5,0x00]
+# CHECK-ASM: encoding: [0x2b,0xf5,0xc5,0xb6]
 smx.acc a0, a1, a2
 
 # CHECK-ASM-AND-OBJ: smx.exp a0, a1, a2
-# CHECK-ASM: encoding: [0x0b,0xa5,0xc5,0x00]
+# CHECK-ASM: encoding: [0x2b,0xf5,0xc5,0xb8]
 smx.exp a0, a1, a2
 
 # CHECK-ASM-AND-OBJ: smx.sigm a0, a1, a2
-# CHECK-ASM: encoding: [0x0b,0xb5,0xc5,0x00]
+# CHECK-ASM: encoding: [0x2b,0xf5,0xc5,0xba]
 smx.sigm a0, a1, a2
 

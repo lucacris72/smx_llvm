@@ -13,12 +13,7 @@
   .globl smx_softmax_i8_asm
   .type smx_softmax_i8_asm, @function
 
-  .equ SMX_CUSTOM0, 0x0b
-  .equ SMX_FUNCT7, 0
-  .equ SMX_CONTX, 0
-  .equ SMX_ACC,   1
-  .equ SMX_EXP,   2
-  .equ SMX_SIGM,  3
+#include "../include/smx_encoding.h"
 
 smx_softmax_i8_asm:
   li      a3, 0x00007F80
@@ -28,7 +23,7 @@ smx_softmax_i8_asm:
 .Lsmx_contx:
   lw      t2, 0(t0)
   lw      t3, 4(t0)
-  .insn r SMX_CUSTOM0, SMX_CONTX, SMX_FUNCT7, a3, t2, t3
+  .insn r SMX_OPCODE, SMX_FUNCT3, SMX_FUNCT7_CONTX, a3, t2, t3
   addi    t0, t0, 8
   addi    t1, t1, -8
   bnez    t1, .Lsmx_contx
@@ -39,7 +34,7 @@ smx_softmax_i8_asm:
 
 .Lsmx_acc:
   lw      t2, 0(t0)
-  .insn r SMX_CUSTOM0, SMX_ACC, SMX_FUNCT7, a4, t2, a3
+  .insn r SMX_OPCODE, SMX_FUNCT3, SMX_FUNCT7_ACC, a4, t2, a3
   addi    t0, t0, 4
   addi    t1, t1, -4
   bnez    t1, .Lsmx_acc
@@ -50,8 +45,8 @@ smx_softmax_i8_asm:
 
 .Lsmx_output:
   lw      t2, 0(t0)
-  .insn r SMX_CUSTOM0, SMX_EXP, SMX_FUNCT7, a5, t2, a3
-  .insn r SMX_CUSTOM0, SMX_SIGM, SMX_FUNCT7, t3, a4, a5
+  .insn r SMX_OPCODE, SMX_FUNCT3, SMX_FUNCT7_EXP, a5, t2, a3
+  .insn r SMX_OPCODE, SMX_FUNCT3, SMX_FUNCT7_SIGM, t3, a4, a5
   sw      t3, 0(t5)
   addi    t0, t0, 4
   addi    t5, t5, 4

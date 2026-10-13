@@ -19,7 +19,8 @@ Target:
 
 ```text
 RISC-V RV32
-Opcode: CUSTOM0 / 0x0b / 0001011
+Opcode: CUSTOM1 / 0x2b / 0101011
+funct3: 111; funct7: CONTX=0x5a, ACC=0x5b, EXP=0x5c, SIGM=0x5d
 Format: R-type
 Data: four packed int8 lanes per 32-bit register
 ```

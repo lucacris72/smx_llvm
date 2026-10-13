@@ -95,14 +95,14 @@ smx.exp   rd, rs1, rs2
 smx.sigm  rd, rs1, rs2
 ```
 
-Tutte usano formato R-type, opcode `CUSTOM0` e `funct7 = 0`. Il `funct3`
-seleziona l'operazione:
+ISA v2: tutte usano formato R-type, opcode `CUSTOM1` e `funct3 = 7`. Il `funct7`
+seleziona l'operazione (contratto in `hardware/smx/isa/smx.json`):
 
 ```text
-0 -> smx.contx
-1 -> smx.acc
-2 -> smx.exp
-3 -> smx.sigm
+0x5a -> smx.contx
+0x5b -> smx.acc
+0x5c -> smx.exp
+0x5d -> smx.sigm
 ```
 
 `smx.contx` e `smx.acc` hanno semantica accumulator-like: il registro `rd`
@@ -144,7 +144,7 @@ Il test MC verifica:
 
 ```text
 parser assembly
-encoding CUSTOM0/funct3
+encoding CUSTOM1/funct3=7/funct7
 objdump/disassembler
 feature gate +smx
 ```
