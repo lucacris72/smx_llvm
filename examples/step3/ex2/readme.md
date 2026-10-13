@@ -32,10 +32,11 @@ limit far below a complete counter wrap.
 `build/results.json` and `build/report.md` contain cycle totals and speedup,
 defined as scalar cycles divided by Xsmx cycles. A value below 1 is a slowdown.
 These are simulated core cycles, not Python or Verilator wall-clock time.
-The current lowering uses alignment-1 word loads and may expand them into byte
-loads and shifts, so a speedup is measured rather than assumed.
+The original lowering used alignment-1 word loads expanded into byte loads
+and shifts. The [step5 compiler](../../step5/readme.md) uses aligned loads
+with scalar peeling, so rebuilding with it produces different cycle counts.
 
-## Measured result
+## Historical Result Before Step5
 
 Run on 2026-10-01 with the course Clang 18.1.8 (`-O2`), GNU runtime/toolchain
 15.1.0, and hardware commit `1d8dff15a190e3e14fa3d1513bc31d5247eee2b7`:

@@ -11,8 +11,8 @@ The project is intentionally incremental:
 
 1. Model the four SMX instructions in the LLVM RISC-V backend.
 2. Provide C wrappers and a small runtime function that emits SMX operations.
-3. Recognize canonical signed INT8 minimum reductions and lower them to
-   `smx.contx` automatically.
+3. Recognize canonical signed INT8 min/max reductions and lower them to
+   `smx.contx` automatically, with aligned packed loads and scalar boundaries.
 
 The local `.context/` directory is ignored by git and is used only as a working
 knowledge base.
@@ -27,6 +27,8 @@ knowledge base.
 | [step3/ex1](examples/step3/ex1/readme.md) | Simple C minimum lowered automatically to SMX | `make -C examples/step3/ex1 check` |
 | [step3/ex2](examples/step3/ex2/readme.md) | Scalar/Xsmx RTL equivalence, cycles and speedup | `make -C examples/step3/ex2 check` |
 | [step4](examples/step4/readme.md) | Builtin IR/assembly and LLVM SMX sweep versus fixed hardware results | `make -s -C examples/step4 run` |
+| [step5/ex1](examples/step5/ex1/readme.md) | Min, max, fused min/max, custom seeds and aligned packed loads | `make -s -C examples/step5/ex1 check` |
+| [step5/ex2](examples/step5/ex2/readme.md) | RTL equivalence across alignments and seeds, cycles and speedup | `make -s -C examples/step5/ex2 check` |
 
 The hardware examples require the initialized RTL submodule, Verilator and
 the GNU RISC-V runtime in `/opt/riscv`; compiler examples use the local course

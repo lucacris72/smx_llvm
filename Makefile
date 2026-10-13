@@ -32,7 +32,8 @@ check-llvm:
 		llvm-project/llvm/test/CodeGen/RISCV/smx-intrinsics.ll \
 		llvm-project/llvm/test/Transforms/SMXMinLoop \
 		llvm-project/clang/test/CodeGen/RISCV/smx-intrinsics.c \
-		llvm-project/clang/test/CodeGen/RISCV/smx-min-loop.c
+		llvm-project/clang/test/CodeGen/RISCV/smx-min-loop.c \
+		llvm-project/clang/test/CodeGen/RISCV/smx-extrema-loop.c
 
 smx-clang-softmax-asm: $(BUILD_DIR)/smx_softmax_i8.llvm.s
 

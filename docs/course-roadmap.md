@@ -23,6 +23,10 @@ softmax e non richiede uno speedup per essere considerato riuscito.
 4. **C automatico**: un LoopPass dedicato riconosce un minimo signed INT8
    canonico e usa `smx.contx` su otto byte per volta. Il codice scalare
    gestisce la coda, incluso `n < 8`.
+5. **Estremi e allineamento**: lo step5 estende la pass a massimo e min/max
+   insieme, seed arbitrari e inizializzazione da `a[0]`. I load packed sono
+   allineati a quattro byte; un prefisso scalare gestisce i puntatori non
+   allineati. [Implementazione e verifiche](step5-implementation.md).
 
 Per ogni tappa: sorgente, comando, IR/assembly/ELF prima e dopo, test e una
 breve spiegazione del livello LLVM modificato. I commit seguono lo stesso
@@ -32,8 +36,8 @@ ordine e non importano il vecchio pass sperimentale.
 
 Il ramo `main` parte dal commit `e8426c15b` di LLVM 18
 e conserva l'RTL come submodule al commit `1d8dff15a190e3e14fa3d1513bc31d5247eee2b7`.
-Questo e' l'unico ramo di sviluppo del progetto. `build/` e' locale e non
-versionato.
+L'estensione dello step5 e' sul ramo `codex/smx-extrema-aligned`, creato da
+`main`. `build/` e' locale e non versionato.
 
 ```sh
 git submodule update --init hardware/smx
@@ -170,7 +174,7 @@ richiede di ricompilare LLVM. Basta ricompilare gli esempi o rilanciare i test.
 Gli ELF di simulazione usano il linker e il runtime GNU gia' esistenti: non
 serve ricostruire newlib o modificare il linking per ogni nuova istruzione.
 
-I Makefile di `step3/ex1` e `step4` tracciano anche i binari dei tool come
+I Makefile di `step3/ex1`, `step4` e `step5` tracciano anche i binari dei tool come
 dipendenze degli artefatti di compilazione, quindi una loro ricompilazione
 rigenera l'IR/assembly dell'esempio. Per gli
 altri esempi, i cui Makefile non tracciano ancora queste dipendenze, dopo aver
@@ -189,7 +193,8 @@ int8_t min_i8(const int8_t *a, size_t n) {
 ```
 
 `smx.contx` riceve due parole da quattro byte e aggiorna massimo, minimo e
-shift nel contesto. Il pass estrae solo il minimo dai bit 15:8. Non
+shift nel contesto. Il caso introduttivo estrae il minimo dai bit 15:8;
+lo step5 usa anche il massimo nei bit 7:0 e fonde le due riduzioni. Non
 riconosce un calcolo di softmax completo e non cambia loop con effetti
 collaterali o load volatile/atomici. Il risultato deve coincidere con il loop
 scalare per ogni `n`, compreso zero, e per ogni valore signed INT8.

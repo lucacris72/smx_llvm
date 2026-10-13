@@ -1,0 +1,72 @@
+# PASS-LABEL: define{{.*}} @min_i8(
+# PASS: load i32, ptr {{.*}}, align 4
+# PASS: load i32, ptr {{.*}}, align 4
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS: smx.aligned
+# PASS-LABEL: define{{.*}} @max_i8(
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS: trunc i32 %smx.next.ctx to i8
+# PASS-LABEL: define{{.*}} @minmax_i8(
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-NOT: call i32 @llvm.riscv.smx.contx(
+# PASS: smx.min.next = phi i8
+# PASS-NOT: call i32 @llvm.riscv.smx.contx(
+# PASS-LABEL: define{{.*}} @min_seed_i8(
+# PASS: zext i8 %seed to i32
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-LABEL: define{{.*}} @max_seed_i8(
+# PASS: zext i8 %seed to i32
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-LABEL: define{{.*}} @minmax_seed_i8(
+# PASS: freeze i8 %hi
+# PASS: freeze i8 %lo
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-LABEL: define{{.*}} @min_first_i8(
+# PASS: phi i32 [ {{.*}} ], [ 1,
+# PASS: smx.aligned
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-LABEL: define{{.*}} @max_first_i8(
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-LABEL: define{{.*}} @minmax_first_i8(
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-LABEL: define{{.*}} @minmax_aligned_i8(
+# PASS-NOT: smx.aligned
+# PASS: load i32, ptr {{.*}}, align 4
+# PASS: load i32, ptr {{.*}}, align 4
+# PASS: call i32 @llvm.riscv.smx.contx(
+# PASS-NOT: smx.aligned
+
+# AUTO-LABEL: define{{.*}} @min_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @max_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @minmax_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @min_seed_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @max_seed_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @minmax_seed_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @min_first_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @max_first_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @minmax_first_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+# AUTO-LABEL: define{{.*}} @minmax_aligned_i8(
+# AUTO: call i32 @llvm.riscv.smx.contx(
+
+# ASM-LABEL: minmax_i8:
+# ASM: lw
+# ASM: lw
+# ASM: smx.contx
+# ASM-NOT: smx.contx
+# ASM-LABEL: min_seed_i8:
+# ASM-LABEL: minmax_aligned_i8:
+# ASM: lw
+# ASM: lw
+# ASM: smx.contx
+
+# SCALAR-LABEL: min_i8:
+# SCALAR-NOT: smx.contx

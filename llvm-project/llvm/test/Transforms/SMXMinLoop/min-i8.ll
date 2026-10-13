@@ -9,8 +9,8 @@ declare i8 @llvm.smin.i8(i8, i8)
 define i8 @min_i8(ptr %a, i32 %n) #0 {
 ; CHECK-LABEL: define i8 @min_i8(
 ; CHECK: smx.packed:
-; CHECK: load i32, ptr {{.*}}, align 1
-; CHECK: load i32, ptr {{.*}}, align 1
+; CHECK: load i32, ptr {{.*}}, align 4
+; CHECK: load i32, ptr {{.*}}, align 4
 ; CHECK: call i32 @llvm.riscv.smx.contx(
 ; CHECK: smx.scalar:
 ; CHECK: call i8 @llvm.smin.i8(

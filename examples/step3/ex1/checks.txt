@@ -4,8 +4,8 @@
 
 # PASS-LABEL: define{{.*}} @min_i8(
 # PASS: smx.packed:
-# PASS: load i32, ptr {{.*}}, align 1
-# PASS: load i32, ptr {{.*}}, align 1
+# PASS: load i32, ptr {{.*}}, align 4
+# PASS: load i32, ptr {{.*}}, align 4
 # PASS: call i32 @llvm.riscv.smx.contx(
 # PASS: smx.scalar:
 # PASS: call i8 @llvm.smin.i8(

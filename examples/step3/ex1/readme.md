@@ -56,14 +56,15 @@ editing this C example does not require rebuilding LLVM. The compiler-build
 integration is explained in [the course roadmap](../../../docs/course-roadmap.md#come-le-modifiche-diventano-tool-utilizzabili).
 
 For each iteration, the pass checks whether at least eight elements remain.
-The packed path loads two 32-bit words with alignment 1, calls `smx.contx`,
-and extracts the signed minimum from bits 15:8 of its context. The original
-scalar reduction handles the final 0-7 elements. The original zero-length
-guard remains in place and returns the initial value 127.
+The packed path loads two 32-bit words, calls `smx.contx`, and extracts the
+signed minimum from bits 15:8. The original zero-length guard returns 127.
 
-The two `load i32 align 1` operations are visible in LLVM IR. On this RV32I
-target the backend expands each unaligned word load into byte loads and shifts;
-`smx.contx` is still emitted, but this example does not claim a speedup.
+The original step3 used `load i32 align 1`, expanded into byte loads and
+shifts by the backend. With the [step5 extension](../../step5/readme.md),
+this example uses `align 4` and two `lw` instructions. Scalar iterations
+handle both the unaligned prefix and the final 0-7 elements. `checks.txt`
+expects the current lowering; the original implementation is in the history
+before step5 (for example commit `200a9aed5`).
 
 `make check` verifies the example IR/assembly with `FileCheck` and runs the
 two LLVM regression tests for this milestone. For an optional hardware check:

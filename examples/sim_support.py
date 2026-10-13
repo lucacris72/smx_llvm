@@ -1,6 +1,8 @@
 """Run bare-metal firmware with the repository's Verilator core."""
 
 from contextlib import ExitStack
+import hashlib
+import json
 from pathlib import Path
 import shlex
 import shutil
@@ -28,6 +30,29 @@ def prepare_simulator(repo: Path, log: Path | None = None) -> Path:
     else:
         run_logged(command, log)
     return core
+
+
+def prepare_event_simulator(core: Path, build: Path) -> Path:
+    target = build / "simulator"
+    stamp = target / "signature.json"
+    driver = Path(__file__).with_name("sim_event_main.cpp")
+    signature = {name: hashlib.sha256(path.read_bytes()).hexdigest()
+                 for name, path in {
+                     "rtl_model": core / "obj_dir/Vtb_top",
+                     "hardware_driver": core / "sim_main.cpp",
+                     "event_driver": driver,
+                 }.items()}
+    if stamp.exists() and json.loads(stamp.read_text()) == signature and (target / "obj_dir/Vtb_top").exists():
+        return target
+    # Only the C++ driver is rebuilt; the generated RTL model is unchanged.
+    shutil.copytree(core / "obj_dir", target / "obj_dir", dirs_exist_ok=True)
+    run_logged([
+        "make", "-s", "-C", str(target / "obj_dir"), "-f", "Vtb_top.mk", "Vtb_top",
+        "VM_USER_CLASSES=sim_event_main", f"VM_USER_DIR={driver.parent}",
+        f'VM_USER_CFLAGS=-O2 -std=c++20 -I"{core}"',
+    ], build / "simulator-build.log")
+    stamp.write_text(json.dumps(signature, indent=2) + "\n")
+    return target
 
 
 def validate_exit(output: str) -> None:

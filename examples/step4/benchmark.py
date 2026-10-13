@@ -15,7 +15,7 @@ REPO = STEP4.parents[1]
 GROUND_TRUTH = STEP4 / "ground_truth.csv"
 SIZES = (8, 16, 32, 64, 128, 256, 512, 1024)
 sys.path.insert(0, str(REPO / "examples"))
-from sim_support import prepare_simulator, run_firmware, run_logged, validate_exit
+from sim_support import prepare_event_simulator, prepare_simulator, run_firmware, run_logged, validate_exit
 
 
 def digest(path: Path) -> str:
@@ -112,25 +112,6 @@ def comparison(old: dict, measured: dict) -> dict:
         "FP32_ground_truth_over_LLVM": old["FP32"] / cycles,
         "SW_ground_truth_over_LLVM": old["SW_Int8"] / cycles,
     }
-
-
-def prepare_event_simulator(core: Path, build: Path) -> Path:
-    target = build / "simulator"
-    stamp = target / "signature.json"
-    signature = {"rtl_model": digest(core / "obj_dir/Vtb_top"),
-                 "hardware_driver": digest(core / "sim_main.cpp"),
-                 "event_driver": digest(STEP4 / "event_main.cpp")}
-    if stamp.exists() and json.loads(stamp.read_text()) == signature and (target / "obj_dir/Vtb_top").exists():
-        return target
-    # Only the C++ driver is rebuilt; the generated RTL model is copied unchanged.
-    shutil.copytree(core / "obj_dir", target / "obj_dir", dirs_exist_ok=True)
-    run_logged([
-        "make", "-s", "-C", str(target / "obj_dir"), "-f", "Vtb_top.mk", "Vtb_top",
-        "VM_USER_CLASSES=event_main", f"VM_USER_DIR={STEP4}",
-        f'VM_USER_CFLAGS=-O2 -std=c++20 -I"{core}"',
-    ], build / "simulator-build.log")
-    stamp.write_text(json.dumps(signature, indent=2) + "\n")
-    return target
 
 
 def run_image(core: Path, firmware: Path, run: Path) -> str:
