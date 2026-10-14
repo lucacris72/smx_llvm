@@ -6,27 +6,29 @@
 //
 //===----------------------------------------------------------------------===//
 
+include "RISCVSMXEncoding.td"
+
 let Predicates = [HasXSMX, IsRV32] in {
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
-  class SMX_rr<bits<3> funct3, string opcodestr>
-      : RVInstR<0b0000000, funct3, OPC_CUSTOM_0, (outs GPR:$rd),
+  class SMX_rr<bits<7> funct7, string opcodestr>
+      : RVInstR<funct7, SMXFunct3, SMXOpcode, (outs GPR:$rd),
                 (ins GPR:$rs1, GPR:$rs2), opcodestr,
                 "$rd, $rs1, $rs2">;
 
-  class SMX_acc_rr<bits<3> funct3, string opcodestr>
-      : RVInstR<0b0000000, funct3, OPC_CUSTOM_0, (outs GPR:$rd_wb),
+  class SMX_acc_rr<bits<7> funct7, string opcodestr>
+      : RVInstR<funct7, SMXFunct3, SMXOpcode, (outs GPR:$rd_wb),
                 (ins GPR:$rd, GPR:$rs1, GPR:$rs2), opcodestr,
                 "$rd, $rs1, $rs2"> {
     let Constraints = "$rd_wb = $rd";
   }
 
-  def SMX_CONTX : SMX_acc_rr<0b000, "smx.contx">,
+  def SMX_CONTX : SMX_acc_rr<SMXFunct7CONTX, "smx.contx">,
                   Sched<[WriteIALU, ReadIALU, ReadIALU]>;
-  def SMX_ACC   : SMX_acc_rr<0b001, "smx.acc">,
+  def SMX_ACC   : SMX_acc_rr<SMXFunct7ACC, "smx.acc">,
                   Sched<[WriteIALU, ReadIALU, ReadIALU]>;
-  def SMX_EXP   : SMX_rr<0b010, "smx.exp">,
+  def SMX_EXP   : SMX_rr<SMXFunct7EXP, "smx.exp">,
                   Sched<[WriteIALU, ReadIALU, ReadIALU]>;
-  def SMX_SIGM  : SMX_rr<0b011, "smx.sigm">,
+  def SMX_SIGM  : SMX_rr<SMXFunct7SIGM, "smx.sigm">,
                   Sched<[WriteIALU, ReadIALU, ReadIALU]>;
 }
 

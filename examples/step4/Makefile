@@ -18,7 +18,7 @@ CORE := $(REPO_ROOT)/hardware/smx/example_tb/core
 ARCH := rv32imc_zicsr
 FLAGS := --target=riscv32-unknown-elf --sysroot=$(RISCV_SYSROOT) -mabi=ilp32
 SMX_FLAGS := $(FLAGS) -march=$(ARCH)_xsmx -I$(REPO_ROOT)/include
-HEADERS := $(REPO_ROOT)/include/smx_intrin.h
+HEADERS := $(REPO_ROOT)/include/smx_intrin.h $(REPO_ROOT)/include/smx_encoding.h
 DRIVER := $(STEP4_DIR)/benchmark.py
 SUPPORT := $(REPO_ROOT)/examples/sim_support.py
 BUILD_DEPS := $(STEP4_DIR)/Makefile $(CLANG) $(HEADERS)

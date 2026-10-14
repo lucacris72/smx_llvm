@@ -42,7 +42,8 @@ Target:
 
 ```text
 RISC-V RV32
-Opcode: CUSTOM0 / 0x0b / 0001011
+Opcode: CUSTOM1 / 0x2b / 0101011
+funct3: 111; funct7: CONTX=0x5a, ACC=0x5b, EXP=0x5c, SIGM=0x5d
 Format: R-type
 Data: four packed int8 lanes per 32-bit register
 ```
@@ -70,6 +71,20 @@ Layout:
 [15:8]  global min, signed int8
 [7:0]   global max, signed int8
 ```
+
+## Shared ISA contract
+
+Encoding v2 is defined by `hardware/smx/isa/smx.json`. `make isa-check`
+verifies the generated C and TableGen constants; `make isa-sync` updates them
+when intentionally changing the canonical contract. Rebuild LLVM and all
+firmware after an encoding change. The course keeps `-march=..._xsmx`,
+`-mattr=+xsmx` and the RV32-only instruction predicates.
+
+`make check-encoding` tests actual assembler/disassembler bytes and reserved
+encodings. `make check-rtl-isa` runs a Clang-built smoke firmware on the pinned
+canonical core. Core sources remain in the `hardware/smx` submodule.
+See [the ISA v2 validation record](docs/isa-v2-validation.md) for the course
+checks performed after this migration.
 
 ## Repository Layout
 

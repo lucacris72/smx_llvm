@@ -12,15 +12,9 @@
 #define REPEAT 1u
 #endif
 
-// -------------------- SMX Custom Instructions --------------------
-// func3:
-// 000: SMX.CONTX
-// 001: SMX.ACC
-// 010: SMX.EXP
-// 011: SMX.SIGM
-
-#if defined(SMX_USE_LLVM_INTRINSICS) || defined(SMX_USE_MNEMONICS)
-#include "smx_intrin.h"
+// All paths share the encoding in include/smx_encoding.h. Without the LLVM
+// switches, the intrinsics use volatile .insn, preserving the GCC baseline.
+#include "../../../include/smx_intrin.h"
 #if defined(SMX_USE_LLVM_INTRINSICS) && !SMX_RISCV_BUILTIN
 #error "This example requires Clang with SMX builtins enabled"
 #endif
@@ -28,20 +22,6 @@
 #define SMX_ACC(rd, rs1, rs2) ((rd) = smx_acc((rd), (rs1), (rs2)))
 #define SMX_EXP(rd, rs1, rs2) ((rd) = smx_exp((rs1), (rs2)))
 #define SMX_SIGM(rd, rs1, rs2) ((rd) = smx_sigm((rs1), (rs2)))
-#else
-#define SMX_CONTX(rd, rs1, rs2) \
-    __asm__ volatile(".insn r 0x0B, 0, 0, %0, %1, %2" : "+r"(rd) : "r"(rs1), "r"(rs2))
-
-#define SMX_ACC(rd, rs1, rs2) \
-    __asm__ volatile(".insn r 0x0B, 1, 0, %0, %1, %2" : "+r"(rd) : "r"(rs1), "r"(rs2))
-
-#define SMX_EXP(rd, rs1, rs2) \
-    __asm__ volatile(".insn r 0x0B, 2, 0, %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2))
-
-#define SMX_SIGM(rd, rs1, rs2) \
-    __asm__ volatile(".insn r 0x0B, 3, 0, %0, %1, %2" : "=r"(rd) : "r"(rs1), "r"(rs2))
-#endif
-
 
 // -------------------- Baseline FP32 Softmax --------------------
 // Clampa il delta per evitare overflow della exp in soft-float

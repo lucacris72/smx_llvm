@@ -25,16 +25,16 @@ all: $(DUMP) $(ATTRIBUTES) $(ENCODING)
 $(BUILD_DIR):
 	mkdir -p "$@"
 
-$(OBJECT): $(SOURCE) | $(BUILD_DIR)
+$(OBJECT): $(SOURCE) $(CLANG) | $(BUILD_DIR)
 	$(CLANG) --target=riscv32-unknown-elf -march=rv32i_xsmx -c "$<" -o "$@"
 
-$(DUMP): $(OBJECT)
+$(DUMP): $(OBJECT) $(LLVM_OBJDUMP)
 	$(LLVM_OBJDUMP) -d "$<" > "$@"
 
-$(ATTRIBUTES): $(OBJECT)
+$(ATTRIBUTES): $(OBJECT) $(LLVM_READELF)
 	$(LLVM_READELF) -A "$<" > "$@"
 
-$(ENCODING): $(SOURCE) | $(BUILD_DIR)
+$(ENCODING): $(SOURCE) $(LLVM_MC) | $(BUILD_DIR)
 	$(LLVM_MC) -triple=riscv32 -mattr=+xsmx -show-encoding "$<" > "$@"
 
 step0-elf:

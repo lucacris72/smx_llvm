@@ -13,7 +13,7 @@ LLVM_DWARFDUMP := $(LLVM_TOOLS)/llvm-dwarfdump
 LLVM_LIT := $(LLVM_TOOLS)/llvm-lit
 
 SOURCE := $(EX1_DIR)/smx_explicit.c
-HEADER := $(REPO_ROOT)/include/smx_intrin.h
+HEADER := $(REPO_ROOT)/include/smx_intrin.h $(REPO_ROOT)/include/smx_encoding.h
 IR := $(BUILD_DIR)/smx_explicit.ll
 ASM := $(BUILD_DIR)/smx_explicit.s
 OBJECT := $(BUILD_DIR)/smx_explicit.o
@@ -33,22 +33,22 @@ all: $(IR) $(ASM) $(DUMP) $(ATTRIBUTES) $(DWARF)
 $(BUILD_DIR):
 	mkdir -p "$@"
 
-$(IR): $(SOURCE) $(HEADER) | $(BUILD_DIR)
+$(IR): $(SOURCE) $(HEADER) $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(CLANG_FLAGS) -emit-llvm -S "$<" -o "$@"
 
-$(ASM): $(IR)
+$(ASM): $(IR) $(LLC)
 	$(LLC) -mtriple=riscv32 -mattr=+xsmx -verify-machineinstrs "$<" -o "$@"
 
-$(OBJECT): $(SOURCE) $(HEADER) | $(BUILD_DIR)
+$(OBJECT): $(SOURCE) $(HEADER) $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(CLANG_FLAGS) -g -c "$<" -o "$@"
 
-$(DUMP): $(OBJECT)
+$(DUMP): $(OBJECT) $(LLVM_OBJDUMP)
 	$(LLVM_OBJDUMP) --source --line-numbers -d "$<" > "$@"
 
-$(ATTRIBUTES): $(OBJECT)
+$(ATTRIBUTES): $(OBJECT) $(LLVM_READELF)
 	$(LLVM_READELF) -A "$<" > "$@"
 
-$(DWARF): $(OBJECT)
+$(DWARF): $(OBJECT) $(LLVM_DWARFDUMP)
 	$(LLVM_DWARFDUMP) --debug-line "$<" > "$@"
 
 check:

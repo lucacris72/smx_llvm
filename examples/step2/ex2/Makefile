@@ -8,7 +8,7 @@ RISCV_SYSROOT := $(shell $(RISCV_CC) -print-sysroot)
 CLANG := $(LLVM_TOOLS)/clang
 FILECHECK := $(LLVM_TOOLS)/FileCheck
 SOURCE := $(EX2_DIR)/optimization.c
-HEADER := $(REPO_ROOT)/include/smx_intrin.h
+HEADER := $(REPO_ROOT)/include/smx_intrin.h $(REPO_ROOT)/include/smx_encoding.h
 CHECKS := $(EX2_DIR)/checks.txt
 
 BUILTIN_IR := $(BUILD_DIR)/builtin.ll
@@ -27,16 +27,16 @@ all: $(BUILTIN_IR) $(BUILTIN_ASM) $(VOLATILE_IR) $(VOLATILE_ASM)
 $(BUILD_DIR):
 	mkdir -p "$@"
 
-$(BUILTIN_IR): $(SOURCE) $(HEADER) | $(BUILD_DIR)
+$(BUILTIN_IR): $(SOURCE) $(HEADER) $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(CLANG_FLAGS) -DSMX_USE_LLVM_INTRINSICS=1 -emit-llvm -S "$<" -o "$@"
 
-$(BUILTIN_ASM): $(SOURCE) $(HEADER) | $(BUILD_DIR)
+$(BUILTIN_ASM): $(SOURCE) $(HEADER) $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(CLANG_FLAGS) -DSMX_USE_LLVM_INTRINSICS=1 -S "$<" -o "$@"
 
-$(VOLATILE_IR): $(SOURCE) $(HEADER) | $(BUILD_DIR)
+$(VOLATILE_IR): $(SOURCE) $(HEADER) $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(CLANG_FLAGS) -DSMX_USE_MNEMONICS=1 -emit-llvm -S "$<" -o "$@"
 
-$(VOLATILE_ASM): $(SOURCE) $(HEADER) | $(BUILD_DIR)
+$(VOLATILE_ASM): $(SOURCE) $(HEADER) $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(CLANG_FLAGS) -DSMX_USE_MNEMONICS=1 -S "$<" -o "$@"
 
 check: all

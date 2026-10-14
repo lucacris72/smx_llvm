@@ -17,6 +17,7 @@ HEX := $(BUILD_DIR)/softmax_test.hex
 DUMP := $(BUILD_DIR)/softmax_test.dump
 SOURCE_DUMP := $(BUILD_DIR)/softmax_test.source.dump
 IR := $(BUILD_DIR)/softmax_test.ll
+HEADERS := $(STEP0_DIR)/../../include/smx_intrin.h $(STEP0_DIR)/../../include/smx_encoding.h
 SOURCES := $(SRC_DIR)/softmax_test.c $(SRC_DIR)/crt0.S \
            $(SRC_DIR)/syscalls.c $(SRC_DIR)/vectors.S \
            $(CORE_DIR)/mem_stall/mem_stall.c
@@ -30,14 +31,14 @@ dumps: $(DUMP) $(SOURCE_DUMP)
 
 ir: $(IR)
 
-$(IR): $(SRC_DIR)/softmax_test.c $(CLANG) $(STEP0_DIR)/Makefile | $(BUILD_DIR)
+$(IR): $(SRC_DIR)/softmax_test.c $(HEADERS) $(CLANG) $(STEP0_DIR)/Makefile | $(BUILD_DIR)
 	@$(CLANG) --target=riscv32-unknown-elf --sysroot=$(shell $(RISCV_CC) -print-sysroot) \
 		$(RISCV_FLAGS) -O2 -S -emit-llvm "$<" -o "$@"
 
 $(BUILD_DIR):
 	mkdir -p "$@"
 
-$(ELF): $(SOURCES) $(SRC_DIR)/link.ld | $(BUILD_DIR)
+$(ELF): $(SOURCES) $(HEADERS) $(SRC_DIR)/link.ld | $(BUILD_DIR)
 	$(RISCV_CC) $(RISCV_FLAGS) -O2 -g -nostdlib -static \
 		-T $(SRC_DIR)/link.ld -o "$@" $(SOURCES) \
 		-Wl,--start-group -lm -lc -lgcc -Wl,--end-group

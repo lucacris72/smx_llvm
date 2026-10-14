@@ -7,12 +7,12 @@ LLVM_BUILD ?= build/llvm-course
 LLVM_TOOLS := $(abspath $(LLVM_BUILD))/bin
 LLVM_CLANG := $(LLVM_TOOLS)/clang
 LLVM_LIT := $(LLVM_TOOLS)/llvm-lit
-SMX_CORE_DIR := hardware/smx/example_tb/core
+SMX_CORE_DIR = $(SMX_RTL_CORE_DIR)
 
 CPPFLAGS := -Iinclude
 CFLAGS := -std=c11 -Wall -Wextra
 RISCV_CFLAGS := -O2 -march=rv32im -mabi=ilp32
-SMX_RTL_DIR := hardware/smx
+SMX_RTL_DIR ?= hardware/smx
 SMX_RTL_UNIT_DIR := $(SMX_RTL_DIR)/SMX_dev/src
 SMX_RTL_CORE_DIR := $(SMX_RTL_DIR)/example_tb/core
 SMX_DOCKER := $(SMX_RTL_DIR)/docker/shell.sh
@@ -37,16 +37,16 @@ check-llvm:
 
 smx-clang-softmax-asm: $(BUILD_DIR)/smx_softmax_i8.llvm.s
 
-$(BUILD_DIR)/smx_softmax_i8.llvm.s: src/smx_softmax_i8.c include/smx_intrin.h include/smx_softmax.h | $(BUILD_DIR)
+$(BUILD_DIR)/smx_softmax_i8.llvm.s: src/smx_softmax_i8.c include/smx_intrin.h include/smx_encoding.h include/smx_softmax.h $(LLVM_CLANG) | $(BUILD_DIR)
 	$(LLVM_CLANG) --target=riscv32-unknown-elf -march=rv32imc_zicsr_xsmx \
 		--sysroot=$(RISCV_SYSROOT) -mabi=ilp32 -O2 \
 		-DSMX_USE_LLVM_INTRINSICS=1 -Iinclude -S $< -o $@
 
-$(BUILD_DIR)/smx_min_i8.llvm.o: examples/smx_min_i8.c include/smx_min.h | $(BUILD_DIR)
+$(BUILD_DIR)/smx_min_i8.llvm.o: examples/smx_min_i8.c include/smx_min.h $(LLVM_CLANG) | $(BUILD_DIR)
 	$(LLVM_CLANG) --target=riscv32-unknown-elf -march=rv32imc_zicsr_xsmx \
 		--sysroot=$(RISCV_SYSROOT) -mabi=ilp32 -O2 -g -Iinclude -c $< -o $@
 
-$(BUILD_DIR)/smx_min_core.llvm.o: examples/smx_min_core.c include/smx_min.h | $(BUILD_DIR)
+$(BUILD_DIR)/smx_min_core.llvm.o: examples/smx_min_core.c include/smx_min.h $(LLVM_CLANG) | $(BUILD_DIR)
 	$(LLVM_CLANG) --target=riscv32-unknown-elf -march=rv32imc_zicsr_xsmx \
 		--sysroot=$(RISCV_SYSROOT) -mabi=ilp32 -O2 -g -Iinclude -c $< -o $@
 
@@ -72,13 +72,13 @@ smx-min-core-run: $(BUILD_DIR)/smx_min_core.hex
 $(BUILD_DIR):
 	mkdir -p $@
 
-$(BUILD_DIR)/smx_softmax_i8.host.o: src/smx_softmax_i8.c include/smx_intrin.h include/smx_softmax.h | $(BUILD_DIR)
+$(BUILD_DIR)/smx_softmax_i8.host.o: src/smx_softmax_i8.c include/smx_intrin.h include/smx_encoding.h include/smx_softmax.h | $(BUILD_DIR)
 	$(HOST_CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/smx_softmax_i8.riscv.o: src/smx_softmax_i8.c include/smx_intrin.h include/smx_softmax.h | $(BUILD_DIR)
+$(BUILD_DIR)/smx_softmax_i8.riscv.o: src/smx_softmax_i8.c include/smx_intrin.h include/smx_encoding.h include/smx_softmax.h | $(BUILD_DIR)
 	$(RISCV_CC) $(CPPFLAGS) $(CFLAGS) $(RISCV_CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/smx_softmax_smx_asm.riscv.o: examples/smx_softmax_smx_asm.S | $(BUILD_DIR)
+$(BUILD_DIR)/smx_softmax_smx_asm.riscv.o: examples/smx_softmax_smx_asm.S include/smx_encoding.h | $(BUILD_DIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) -c $< -o $@
 
 clean:
@@ -99,3 +99,5 @@ smx-docker-unit:
 
 smx-docker-core-softmax:
 	$(SMX_DOCKER) bash -lc 'cd example_tb/core && make softmax-comparison-run'
+
+include smx_isa.mk

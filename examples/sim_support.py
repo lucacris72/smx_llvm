@@ -24,7 +24,10 @@ def run_logged(command: list[str], log: Path, output: Path | None = None) -> Non
 
 def prepare_simulator(repo: Path, log: Path | None = None) -> Path:
     core = repo / "hardware/smx/example_tb/core"
-    command = ["make", "-C", str(core), "verilator-build", "smx-luts"]
+    # The event driver consumes obj_dir; select its profile explicitly even when
+    # the canonical core defaults to per-configuration simulator directories.
+    command = ["make", "-C", str(core), "SIM_EXE=obj_dir/Vtb_top", "SMX=1",
+               "PULP_XPULP=0", "PULP_CLUSTER=0", "verilator-build", "smx-luts"]
     if log is None:
         subprocess.run(command, check=True)
     else:

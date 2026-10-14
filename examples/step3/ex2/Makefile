@@ -25,13 +25,13 @@ all: $(BUILD_DIR)/plain.hex $(BUILD_DIR)/xsmx.hex \
 $(BUILD_DIR):
 	mkdir -p "$@"
 
-$(BUILD_DIR)/benchmark.o: $(EX2_DIR)/benchmark.c | $(BUILD_DIR)
+$(BUILD_DIR)/benchmark.o: $(EX2_DIR)/benchmark.c $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(FLAGS) -march=$(ARCH) -c "$<" -o "$@"
 
-$(BUILD_DIR)/kernel-plain.o: $(EX2_DIR)/kernel.c | $(BUILD_DIR)
+$(BUILD_DIR)/kernel-plain.o: $(EX2_DIR)/kernel.c $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(FLAGS) -march=$(ARCH) -c "$<" -o "$@"
 
-$(BUILD_DIR)/kernel-xsmx.o: $(EX2_DIR)/kernel.c | $(BUILD_DIR)
+$(BUILD_DIR)/kernel-xsmx.o: $(EX2_DIR)/kernel.c $(CLANG) | $(BUILD_DIR)
 	$(CLANG) $(FLAGS) -march=$(ARCH)_xsmx -c "$<" -o "$@"
 
 $(BUILD_DIR)/%.elf: $(BUILD_DIR)/kernel-%.o $(BUILD_DIR)/benchmark.o $(RUNTIME_SOURCES) $(RUNTIME)/link.ld
@@ -43,7 +43,7 @@ $(BUILD_DIR)/%.elf: $(BUILD_DIR)/kernel-%.o $(BUILD_DIR)/benchmark.o $(RUNTIME_S
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf
 	$(RISCV_OBJCOPY) -O verilog "$<" "$@"
 
-$(BUILD_DIR)/%.dump: $(BUILD_DIR)/kernel-%.o
+$(BUILD_DIR)/%.dump: $(BUILD_DIR)/kernel-%.o $(OBJDUMP)
 	$(OBJDUMP) --mattr=+xsmx -d "$<" > "$@"
 
 test:

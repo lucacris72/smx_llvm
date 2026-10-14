@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=riscv32 < %s | FileCheck %s
+; RUN: llc -mtriple=riscv32 -mattr=+xsmx < %s | FileCheck %s
 
 declare i32 @llvm.riscv.smx.contx(i32, i32, i32)
 declare i32 @llvm.riscv.smx.acc(i32, i32, i32)
